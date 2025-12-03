@@ -95,7 +95,7 @@ body {
 }
 
 .hidden {
-  display: none;
+  display: none !important;
 }
 
 #pause-menu,
