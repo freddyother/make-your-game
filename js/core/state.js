@@ -10,9 +10,13 @@ export function createInitialState() {
   return {
     isPaused: false,
     isGameOver: false,
+
     timeElapsed: 0,
     score: 0,
     lives: INITIAL_LIVES,
+
+    level: 1,
+    bricksRemaining: 0,
 
     paddle: {
       x: (GAME_WIDTH - PADDLE_WIDTH) / 2,
@@ -30,6 +34,7 @@ export function createInitialState() {
       stuckToPaddle: true,
     },
 
-    bricks: [], // We will fill it elsewhere.
+    bricks: [],
+    powerUps: [],
   }
 }

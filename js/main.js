@@ -14,7 +14,7 @@ import { showPauseOverlay, showGameOver } from './ui/overlays.js'
 
 import { updatePaddle, updateBall } from './systems/physics.js'
 import { handleWorldCollisions, handlePaddleCollision, handleBrickCollisions } from './systems/collision.js'
-import { createBricks, loseLife, restartState, resetBallAndPaddle } from './systems/rules.js'
+import { createBricks, loseLife, restartState, resetBallAndPaddle, advanceLevel, maybeSpawnPowerUps, updatePowerUps } from './systems/rules.js'
 
 const state = createInitialState()
 const dom = getDomRefs()
@@ -37,6 +37,13 @@ dom.btnRestartGameOver.addEventListener('click', () => {
 
 function restartGame() {
   restartState(state)
+
+  // clear power-ups from the DOM
+  state.powerUps.forEach((pu) => {
+    if (pu.dom) pu.dom.remove()
+  })
+  state.powerUps = []
+
   createBricks(state, dom)
   resetBallAndPaddle(state)
   showPauseOverlay(dom, false)
@@ -56,13 +63,12 @@ function update(delta) {
   // Throw the ball if it is stuck to the paddle.
   if (state.ball.stuckToPaddle && input.pausePressed && !inputState.lastPausePressed) {
     state.ball.stuckToPaddle = false // Throw the ball
-  }
-  // If the ball is already in play, use space to pause.
-  else if (input.pausePressed && !inputState.lastPausePressed) {
+
+    // If the ball is already in play, use space to pause.
+  } else if (input.pausePressed && !inputState.lastPausePressed) {
     state.isPaused = !state.isPaused
     showPauseOverlay(dom, state.isPaused)
   }
-
   inputState.lastPausePressed = input.pausePressed
 
   if (state.isPaused) return
@@ -79,10 +85,19 @@ function update(delta) {
 
   handlePaddleCollision(state)
 
-  const destroyed = handleBrickCollisions(state)
-  if (destroyed > 0) {
-    state.score += destroyed * 10
+  const destroyedBricks = handleBrickCollisions(state)
+  if (destroyedBricks.length > 0) {
+    state.score += destroyedBricks.length * 10 * state.level
+    state.bricksRemaining -= destroyedBricks.length
+
+    maybeSpawnPowerUps(state, destroyedBricks, dom)
+
+    if (state.bricksRemaining <= 0) {
+      advanceLevel(state, dom)
+    }
   }
+
+  updatePowerUps(state, delta, dom)
 
   updateHUD(state, dom)
 }
@@ -94,6 +109,7 @@ function render() {
 
   dom.paddleEl.style.left = p.x + 'px'
   dom.paddleEl.style.top = p.y + 'px'
+  dom.paddleEl.style.width = p.width + 'px'
 
   dom.ballEl.style.left = b.x + 'px'
   dom.ballEl.style.top = b.y + 'px'

@@ -123,3 +123,20 @@ button {
 button:hover {
   filter: brightness(1.1);
 }
+
+.powerup {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #4caf50;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.6);
+}
+
+.powerup-life {
+  background: #ff5722;
+}
+
+.powerup-widen {
+  background: #4caf50;
+}

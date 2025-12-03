@@ -23,4 +23,9 @@ export const CONFIG = {
   BRICK_OFFSET_LEFT: 20,
 
   INITIAL_LIVES: 3,
+
+  // --- NEW: power-ups & difficulty ---
+  POWERUP_SIZE: 18,
+  POWERUP_SPEED: 120,
+  POWERUP_CHANCE: 0.3, // 30% chance per destroyed brick
 }
