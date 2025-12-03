@@ -53,10 +53,16 @@ function update(delta) {
   const input = getSnapshot()
 
   // pause control with Space (flank detect)
-  if (input.pausePressed && !inputState.lastPausePressed) {
+  // Throw the ball if it is stuck to the paddle.
+  if (state.ball.stuckToPaddle && input.pausePressed && !inputState.lastPausePressed) {
+    state.ball.stuckToPaddle = false // Throw the ball
+  }
+  // If the ball is already in play, use space to pause.
+  else if (input.pausePressed && !inputState.lastPausePressed) {
     state.isPaused = !state.isPaused
     showPauseOverlay(dom, state.isPaused)
   }
+
   inputState.lastPausePressed = input.pausePressed
 
   if (state.isPaused) return
