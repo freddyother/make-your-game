@@ -1,3 +1,7 @@
+/* Implements the core gameplay rules.  
+Creates and manages the brick grid, handles life loss, game restart and ball resets.  
+Controls scoring, state transitions and game-over conditions.
+*/
 import { CONFIG } from '../config.js'
 
 export function createBricks(state, dom) {

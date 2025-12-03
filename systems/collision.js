@@ -1,3 +1,7 @@
+/* Detects and processes collisions between the ball, walls, paddle and bricks.  
+Returns collision events (such as falling out of bounds) and adjusts ball direction accordingly.  
+Manages brick destruction and simple physics responses.
+*/
 import { CONFIG } from '../config.js'
 
 export function handleWorldCollisions(state) {

@@ -1,3 +1,7 @@
+/* Creates and manages the global game state structure.  
+Defines initial values for paddle, ball, bricks, score, lives, timing and game flags.  
+Holds all mutable gameplay data used by the different systems.
+*/
 import { CONFIG } from '../config.js'
 
 export function createInitialState() {

@@ -1,3 +1,7 @@
+/* Collects and returns references to all relevant DOM elements.  
+Provides easy access for the render and HUD systems without repeated lookups.  
+Acts as a minimal abstraction layer over the HTML structure.
+*/
 export function getDomRefs() {
   const hudTime = document.getElementById('hud-time')
   const hudScore = document.getElementById('hud-score')

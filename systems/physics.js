@@ -1,3 +1,7 @@
+/* Updates the movement of the paddle and the ball based on player input and delta time.  
+Keeps objects within game bounds and maintains ball attachment to the paddle before launch.  
+Handles purely physical motion without game-rule decisions.
+*/
 import { CONFIG } from '../config.js'
 
 export function updatePaddle(state, input, delta) {

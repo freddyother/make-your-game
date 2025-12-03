@@ -1,3 +1,9 @@
+/* Entry point of the game.  
+Initialises the game state, input handlers, DOM references, brick layout and core systems.  
+Starts the main update/render loop and orchestrates all game systems: physics, collisions, rules, HUD updates and UI overlays.  
+Acts as the central coordinator connecting all modules.
+*/
+
 import { createInitialState } from './core/state.js'
 import { createInput } from './core/input.js'
 import { startLoop } from './core/loop.js'

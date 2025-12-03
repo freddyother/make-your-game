@@ -1,3 +1,8 @@
+/* Handles keyboard input for the game.  
+Tracks key states (left, right, pause) and exposes a snapshot for the update cycle.  
+Ensures smooth continuous movement without key spamming.
+*/
+
 export function createInput() {
   const inputState = {
     left: false,
