@@ -6,6 +6,7 @@ export function getDomRefs() {
   const hudTime = document.getElementById('hud-time')
   const hudScore = document.getElementById('hud-score')
   const hudLives = document.getElementById('hud-lives')
+  const hudFps = document.getElementById('hud-fps')
 
   const gameArea = document.getElementById('game-area')
   const paddleEl = document.getElementById('paddle')
@@ -23,6 +24,7 @@ export function getDomRefs() {
     hudTime,
     hudScore,
     hudLives,
+    hudFps,
     gameArea,
     paddleEl,
     ballEl,

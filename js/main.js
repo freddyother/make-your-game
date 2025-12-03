@@ -51,7 +51,7 @@ function restartGame() {
 }
 
 // GLOBAL UPDATE
-function update(delta) {
+function update(delta, fps) {
   if (state.isGameOver) {
     showGameOver(dom, true, state.score)
     return
@@ -99,7 +99,7 @@ function update(delta) {
 
   updatePowerUps(state, delta, dom)
 
-  updateHUD(state, dom)
+  updateHUD(state, dom, fps)
 }
 
 // GLOBAL RENDER
