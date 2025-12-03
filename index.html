@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Brick Breaker</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div id="game-root">
+      <!-- HUD -->
+      <header id="hud">
+        <div class="hud-item">
+          Time:
+          <span id="hud-time">0.0</span>
+          s
+        </div>
+        <div class="hud-item">
+          Score:
+          <span id="hud-score">0</span>
+        </div>
+        <div class="hud-item">
+          Lives:
+          <span id="hud-lives">3</span>
+        </div>
+      </header>
+
+      <!-- Game Area -->
+      <main id="game-area">
+        <div id="paddle"></div>
+        <div id="ball"></div>
+      </main>
+
+      <!-- Pause Menu -->
+      <div id="pause-overlay" class="hidden">
+        <div id="pause-menu">
+          <h2>Paused</h2>
+          <button id="btn-continue">Continue</button>
+          <button id="btn-restart">Restart</button>
+        </div>
+      </div>
+
+      <!-- Game Over Overlay-->
+      <div id="gameover-overlay" class="hidden">
+        <div id="gameover-menu">
+          <h2>Game Over</h2>
+          <p>
+            Final Score:
+            <span id="gameover-score">0</span>
+          </p>
+          <button id="btn-restart-from-gameover">Restart</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- type="module" -->
+    <script type="module" src="js/main.js"></script>
+  </body>
+</html>
