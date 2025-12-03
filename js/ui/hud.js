@@ -2,9 +2,9 @@
 Synchronises game state values with their visual representation.  
 Keeps UI updates separate from gameplay logic.
 */
-export function updateHUD(state, dom) {
+export function updateHUD(state, dom, fps = 0) {
   dom.hudTime.textContent = state.timeElapsed.toFixed(1)
   dom.hudScore.textContent = state.score
   dom.hudLives.textContent = state.lives
-  dom.hudFps.textContent = 'FPS: ' + fps.toFixed(0)
+  dom.hudFps.textContent = fps.toFixed(0)
 }
