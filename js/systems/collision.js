@@ -97,25 +97,3 @@ export function handleBrickCollisions(state) {
 function rectIntersect(ax, ay, aw, ah, bx, by, bw, bh) {
   return ax < bx + bw && ax + aw > bx && ay < by + bh && ay + ah > by
 }
-
-export function handleBrickCollisions(state) {
-  const b = state.ball
-  let destroyedCount = 0
-
-  state.bricks.forEach((brick) => {
-    if (brick.destroyed) return
-
-    if (rectIntersect(b.x, b.y, b.size, b.size, brick.x, brick.y, brick.width, brick.height)) {
-      brick.destroyed = true
-      brick.dom.style.display = 'none'
-      destroyedCount += 1
-      b.vy *= -1
-    }
-  })
-
-  return destroyedCount
-}
-
-function rectIntersect(ax, ay, aw, ah, bx, by, bw, bh) {
-  return ax < bx + bw && ax + aw > bx && ay < by + bh && ay + ah > by
-}
