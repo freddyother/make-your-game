@@ -86,7 +86,7 @@ make-your-game/
 - **Node.js** (LTS recommended)
 - **npm** (comes with Node)
 
-> 💡 En Kali u otras distros Linux, es recomendable instalar Node usando **nvm** en lugar de `apt`, para evitar conflictos con paquetes del sistema.
+> 💡 On Kali or other Linux distros, it is advisable to install Node using **nvm** instead of `apt`, to avoid conflicts with system packages.
 
 ---
 
@@ -136,14 +136,14 @@ Break all bricks to advance to the next level.
 
 ## 🍀 Power-ups summary
 
-| Type          | Colour        | Effect                                            |
-| ------------- | ------------- | ------------------------------------------------- |
-| Extra life    | Green         | +1 life                                           |
-| Widen paddle  | Blue          | Increases paddle width up to a maximum limit      |
-| Shrink paddle | Red           | Decreases paddle width towards the original size  |
-| Slow          | (e.g. purple) | Temporarily halves ball speed                     |
-| Score ×2      | (e.g. yellow) | Temporarily doubles all score gained              |
-| Multi-ball    | –             | State/plumbing prepared for future implementation |
+| Type          | Colour | Effect                                            |
+| ------------- | ------ | ------------------------------------------------- |
+| Extra life    | Green  | +1 life                                           |
+| Widen paddle  | Blue   | Increases paddle width up to a maximum limit      |
+| Shrink paddle | Red    | Decreases paddle width towards the original size  |
+| Slow          | purple | Temporarily halves ball speed                     |
+| Score ×2      | yellow | Temporarily doubles all score gained              |
+| Multi-ball    | red    | State/plumbing prepared for future implementation |
 
 _(Colours depend on your final CSS classes.)_
 
