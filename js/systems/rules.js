@@ -108,44 +108,36 @@ export function advanceLevel(state, dom) {
  * - shrink (power-down): 10% of possible power-ups,
  * only available if the paddle is already at maximum size.
  * - the remaining 90% is divided equally between:
- * life, widen, multiball, slow, scorex2.
+ * life, multiball, slow, scorex2. but no widen
  */
 function choosePowerupKind(state) {
   const basePaddleWidth = CONFIG.PADDLE_WIDTH
   const maxPaddleWidth = basePaddleWidth * 2
 
-  const canSpawnShrink = state.paddle.width >= maxPaddleWidth - 0.5
+  const atMaxSize = state.paddle.width >= maxPaddleWidth - 0.5
 
-  // relative weights (normalised later)
-  const weights = {
-    shrink: 0.1, // 10% reserved for power-down
-    life: 0.18,
-    widen: 0.18,
-    multiball: 0.18,
-    slow: 0.18,
-    scorex2: 0.18,
+  // 🟦 Case 1: if the paddle is not at maximum
+  // we distribute everything among the 5 ‘positive’ power-ups
+  if (!atMaxSize) {
+    const options = ['life', 'widen', 'multiball', 'slow', 'scorex2']
+    const idx = Math.floor(Math.random() * options.length)
+    return options[idx]
+  }
+  // 🟥 Case 2: if the paddle is at maximum
+  //  10% shrink (power-down rojo)
+  //  90% is distributed among the others (but NOT widen)
+  const nonSizeOptions = ['life', 'multiball', 'slow', 'scorex2'] // No 'widen'
+  const r = Math.random()
+
+  // 10% for shrink
+  if (r < 0.1) {
+    return 'shrink'
   }
 
-  const available = ['life', 'widen', 'multiball', 'slow', 'scorex2']
-  if (canSpawnShrink) {
-    available.push('shrink')
-  }
-
-  let totalWeight = 0
-  available.forEach((k) => {
-    totalWeight += weights[k]
-  })
-
-  let r = Math.random() * totalWeight
-  for (const kind of available) {
-    if (r < weights[kind]) {
-      return kind
-    }
-    r -= weights[kind]
-  }
-
-  // defensive fallback
-  return 'life'
+  // The remainder (0.1–1.0) is divided equally among the remaining four.
+  const r2 = (r - 0.1) / 0.9 // we normalise to (0, 1)
+  const idx = Math.floor(r2 * nonSizeOptions.length)
+  return nonSizeOptions[idx]
 }
 
 // Create power-ups from destroyed bricks
@@ -219,10 +211,8 @@ function applyPowerUp(state, powerUp) {
       break
 
     case 'shrink':
-      // power-down: reduce the paddle step by step,
-      const factor = 1 / 1.3 //  reverse of growth (~0.77)
-      const newWidth = state.paddle.width * factor
-      state.paddle.width = Math.max(newWidth, baseWidth)
+      // power-down: we reduce the paddle to its original size
+      state.paddle.width = baseWidth
       break
 
     case 'multiball':
