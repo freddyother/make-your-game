@@ -23,17 +23,42 @@ const { inputState, getSnapshot } = createInput()
 createBricks(state, dom)
 resetBallAndPaddle(state)
 
+// --- Extra refs para el leaderboard ---
+const nicknameInput = document.getElementById('nickname-input')
+const btnSaveScore = document.getElementById('btn-save-score')
+const highscoreTable = document.getElementById('highscore-table')
+const highscoreBody = document.getElementById('highscore-body')
+
 // UI Buttons
 dom.btnContinue.addEventListener('click', () => {
   state.isPaused = false
   showPauseOverlay(dom, false)
 })
+
 dom.btnRestart.addEventListener('click', () => {
   restartGame()
 })
+
 dom.btnRestartGameOver.addEventListener('click', () => {
   restartGame()
 })
+
+// Guardar score y mostrar tabla
+if (btnSaveScore) {
+  btnSaveScore.addEventListener('click', () => {
+    const nickname = (nicknameInput?.value.trim().substring(0, 10) || 'Player').toUpperCase()
+
+    // leemos el score mostrado en el overlay
+    const score = parseInt(document.getElementById('gameover-score').textContent, 10)
+
+    const highscores = savePlayerScore(nickname, score)
+    renderHighScores(highscoreBody, highscores)
+
+    if (highscoreTable) {
+      highscoreTable.classList.remove('hidden')
+    }
+  })
+}
 
 function restartGame() {
   // clear power-ups from the DOM
@@ -42,8 +67,13 @@ function restartGame() {
   })
   state.powerUps = []
 
-  //  Reset the logical game status
+  // Reset logical game state
   restartState(state)
+
+  // limpiar UI de game over / leaderboard
+  if (nicknameInput) nicknameInput.value = ''
+  if (highscoreBody) highscoreBody.innerHTML = ''
+  if (highscoreTable) highscoreTable.classList.add('hidden')
 
   createBricks(state, dom)
   resetBallAndPaddle(state)
@@ -54,6 +84,7 @@ function restartGame() {
 // GLOBAL UPDATE
 function update(delta, fps) {
   if (state.isGameOver) {
+    // mostramos el overlay con el marcador final
     showGameOver(dom, true, state.score)
     return
   }
@@ -146,3 +177,48 @@ function render() {
 
 // Start Loop
 startLoop(update, render)
+
+/* =========================================================
+   Highscore helpers (LocalStorage)
+   ========================================================= */
+
+function loadHighScores() {
+  const raw = localStorage.getItem('highscores')
+  return raw ? JSON.parse(raw) : []
+}
+
+function saveHighScores(list) {
+  localStorage.setItem('highscores', JSON.stringify(list))
+}
+
+function savePlayerScore(nickname, score) {
+  const highscores = loadHighScores()
+
+  highscores.push({ nickname, score })
+
+  // Sort highest → lowest
+  highscores.sort((a, b) => b.score - a.score)
+
+  // Keep only top 10
+  const trimmed = highscores.slice(0, 10)
+
+  saveHighScores(trimmed)
+
+  return trimmed
+}
+
+function renderHighScores(tableBody, list) {
+  if (!tableBody) return
+
+  tableBody.innerHTML = ''
+
+  list.forEach((row, i) => {
+    const tr = document.createElement('tr')
+    tr.innerHTML = `
+      <td>${i + 1}</td>
+      <td>${row.nickname}</td>
+      <td>${row.score}</td>
+    `
+    tableBody.appendChild(tr)
+  })
+}

@@ -5,6 +5,7 @@
     <title>Brick Breaker</title>
     <link rel="stylesheet" href="css/style.css" />
   </head>
+
   <body>
     <div id="game-root">
       <!-- HUD -->
@@ -47,20 +48,44 @@
         </div>
       </div>
 
-      <!-- Game Over Overlay-->
+      <!-- Game Over Overlay -->
       <div id="gameover-overlay" class="hidden">
         <div id="gameover-menu">
           <h2>Game Over</h2>
+
           <p>
             Final Score:
             <span id="gameover-score">0</span>
           </p>
+
+          <!-- Nickname input -->
+          <div id="nickname-box">
+            <label for="nickname-input">Your name (max 10 chars):</label>
+            <input id="nickname-input" type="text" maxlength="10" placeholder="Player" />
+            <button id="btn-save-score">Save Score</button>
+          </div>
+
+          <!-- Highscore table -->
+          <div id="highscore-table" class="hidden">
+            <h3>Leaderboard</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Nickname</th>
+                  <th>Score</th>
+                </tr>
+              </thead>
+              <tbody id="highscore-body"></tbody>
+            </table>
+          </div>
+
           <button id="btn-restart-from-gameover">Restart</button>
         </div>
       </div>
     </div>
 
-    <!-- type="module" -->
+    <!-- Main game script -->
     <script type="module" src="js/main.js"></script>
   </body>
 </html>
