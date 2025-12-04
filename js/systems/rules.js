@@ -50,6 +50,12 @@ export function createBricks(state, dom) {
 }
 
 export function loseLife(state) {
+  // Remove all active power-ups from the screen
+  state.powerUps.forEach((pu) => {
+    if (pu.dom) pu.dom.remove()
+  })
+
+  state.powerUps = []
   state.lives -= 1
   if (state.lives <= 0) {
     state.isGameOver = true
@@ -126,7 +132,7 @@ function choosePowerupKind(state) {
   const atMaxSize = state.paddle.width >= maxPaddleWidth - 0.5
 
   // 🟦 Case 1: if the paddle is not at maximum
-  // we distribute everything among the 5 ‘positive’ power-ups
+  // we distribute everything among the 5 positive power-ups
   if (!atMaxSize) {
     const options = ['life', 'widen', 'multiball', 'slow', 'scorex2']
     const idx = Math.floor(Math.random() * options.length)
