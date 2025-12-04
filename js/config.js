@@ -3,7 +3,7 @@ Defines sizes, speeds, layout values, brick grid dimensions and initial gameplay
 Provides a single source of truth for numerical values to keep the game easily adjustable.
 */
 export const CONFIG = {
-  GAME_WIDTH: 800,
+  GAME_WIDTH: 736,
   GAME_HEIGHT: 600,
   HUD_HEIGHT: 40,
 

@@ -16,11 +16,12 @@ body {
 
 #game-root {
   position: relative;
-  width: 800px;
+  width: 740px;
   height: 600px;
   background: #000;
   border: 2px solid #444;
   overflow: hidden;
+  margin: 40px auto;
 }
 
 /* HUD */
