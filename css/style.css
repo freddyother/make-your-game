@@ -210,3 +210,9 @@ button:hover {
 #highscore-table tr:hover td {
   background: rgba(255, 255, 255, 0.07);
 }
+
+/* Highlighted row in the leaderboard (last score entered) */
+#highscore-table tr.highscore-highlight td {
+  background: rgba(0, 234, 255, 0.25);
+  font-weight: 600;
+}

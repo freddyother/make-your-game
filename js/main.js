@@ -52,8 +52,10 @@ if (btnSaveScore) {
     // we read the score displayed in the overlay
     const score = parseInt(document.getElementById('gameover-score').textContent, 10)
 
-    const highscores = savePlayerScore(nickname, score)
-    renderHighScores(highscoreBody, highscores)
+    // ⬇️ now we receive list + highlighted index
+    const { list, highlightIndex } = savePlayerScore(nickname, score)
+
+    renderHighScores(highscoreBody, list, highlightIndex)
 
     if (highscoreTable) {
       highscoreTable.classList.remove('hidden')
@@ -113,7 +115,7 @@ function restartGame() {
 // GLOBAL UPDATE
 function update(delta, fps) {
   if (state.isGameOver) {
-    // mostramos el overlay con el marcador final
+    // we display the overlay with the final score
     showGameOver(dom, true, state.score)
     return
   }
@@ -208,46 +210,96 @@ function render() {
 startLoop(update, render)
 
 /* =========================================================
-   Highscore helpers (LocalStorage)
+   Highscore helpers (LocalStorage) - TOP 5
    ========================================================= */
 
 function loadHighScores() {
   const raw = localStorage.getItem('highscores')
-  return raw ? JSON.parse(raw) : []
+  if (!raw) return []
+  try {
+    const parsed = JSON.parse(raw)
+    if (!Array.isArray(parsed)) return []
+    return parsed
+  } catch {
+    return []
+  }
 }
 
 function saveHighScores(list) {
   localStorage.setItem('highscores', JSON.stringify(list))
 }
 
+// Save the score if it enters the TOP 5.
+// highlightIndex = -1 if the new score does NOT enter the TOP 5.
 function savePlayerScore(nickname, score) {
-  const highscores = loadHighScores()
+  let highscores = loadHighScores()
 
-  highscores.push({ nickname, score })
+  // we normalise old data (without ts)
+  highscores = highscores.map((e) => ({
+    nickname: e.nickname,
+    score: e.score,
+    ts: e.ts || 0,
+  }))
 
-  // Sort highest → lowest
-  highscores.sort((a, b) => b.score - a.score)
+  // current order (highest → lowest)
+  highscores.sort((a, b) => {
+    if (b.score !== a.score) return b.score - a.score
+    return (a.ts || 0) - (b.ts || 0)
+  })
 
-  // Keep only top 10
-  const trimmed = highscores.slice(0, 10)
+  const now = Date.now()
+  const newEntry = { nickname, score, ts: now }
 
-  saveHighScores(trimmed)
+  let updated = highscores
+  let highlightIndex = -1
 
-  return trimmed
+  if (highscores.length < 5) {
+    // Not yet 5 → enter for sure
+    updated = [...highscores, newEntry]
+  } else {
+    const last = highscores[highscores.length - 1]
+    if (score > last.score) {
+      // Enter the TOP 5 → add and then cut to 5
+      updated = [...highscores, newEntry]
+    } else {
+      // NO entry → return list as it is
+      saveHighScores(highscores)
+      return { list: highscores, highlightIndex: -1 }
+    }
+  }
+
+  // Sort and keep only the top 5
+  updated.sort((a, b) => {
+    if (b.score !== a.score) return b.score - a.score
+    return (a.ts || 0) - (b.ts || 0)
+  })
+  updated = updated.slice(0, 5)
+
+  saveHighScores(updated)
+
+  // position of the new record
+  highlightIndex = updated.findIndex((e) => e.score === score && e.nickname === nickname && e.ts === now)
+
+  return { list: updated, highlightIndex }
 }
 
-function renderHighScores(tableBody, list) {
+// Paint table highlighting the row highlightIndex (if not -1)
+function renderHighScores(tableBody, list, highlightIndex = -1) {
   if (!tableBody) return
 
   tableBody.innerHTML = ''
 
   list.forEach((row, i) => {
     const tr = document.createElement('tr')
+    if (i === highlightIndex) {
+      tr.classList.add('highscore-highlight')
+    }
+
     tr.innerHTML = `
-      <td>${i + 1}</td>
-      <td>${row.nickname}</td>
-      <td>${row.score}</td>
-    `
+        <td>${i + 1}</td>
+        <td>${row.nickname}</td>
+        <td>${row.score}</td>
+      `
     tableBody.appendChild(tr)
   })
 }
