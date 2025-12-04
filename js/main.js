@@ -60,7 +60,7 @@ function update(delta, fps) {
 
   // === POWER-UP TIMERS ===
 
-  // SLOW: reduce la velocidad de la bola durante slowTimer segundos
+  // SLOW: reduces the speed of the ball for slowTimer seconds
   if (state.slowActive) {
     state.slowTimer -= delta
     if (state.slowTimer <= 0) {
@@ -69,8 +69,8 @@ function update(delta, fps) {
     }
   }
 
-  // SCORE X2: mientras scoreMultiplierTimer > 0 usamos el multiplicador;
-  // cuando llega a cero, volvemos a x1
+  // SCORE X2: while scoreMultiplierTimer > 0 we use the multiplier;
+  // when it reaches zero, we return to x1
   if (state.scoreMultiplierTimer > 0) {
     state.scoreMultiplierTimer -= delta
     if (state.scoreMultiplierTimer <= 0) {
@@ -97,7 +97,7 @@ function update(delta, fps) {
 
   state.timeElapsed += delta
 
-  // movimiento de paddle + bola (con slow aplicado en updateBall)
+  // paddle movement + ball (with slow applied in updateBall)
   updatePaddle(state, input, delta)
   updateBall(state, delta)
 
@@ -110,10 +110,10 @@ function update(delta, fps) {
 
   const destroyedBricks = handleBrickCollisions(state)
   if (destroyedBricks.length > 0) {
-    // base score: 10 puntos por ladrillo * nivel
+    // base score: 10 points per brick * level
     const base = destroyedBricks.length * 10 * state.level
 
-    // aplicar multiplicador (scorex2)
+    // apply multiplier (scorex2)
     const multiplier = state.scoreMultiplier || 1
     state.score += base * multiplier
 
