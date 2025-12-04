@@ -28,6 +28,7 @@ const nicknameInput = document.getElementById('nickname-input')
 const btnSaveScore = document.getElementById('btn-save-score')
 const highscoreTable = document.getElementById('highscore-table')
 const highscoreBody = document.getElementById('highscore-body')
+const nicknameBox = document.getElementById('nickname-box')
 
 // UI Buttons
 dom.btnContinue.addEventListener('click', () => {
@@ -43,12 +44,12 @@ dom.btnRestartGameOver.addEventListener('click', () => {
   restartGame()
 })
 
-// Guardar score y mostrar tabla
+// we read the score displayed in the overlay
 if (btnSaveScore) {
   btnSaveScore.addEventListener('click', () => {
     const nickname = (nicknameInput?.value.trim().substring(0, 10) || 'Player').toUpperCase()
 
-    // leemos el score mostrado en el overlay
+    // we read the score displayed in the overlay
     const score = parseInt(document.getElementById('gameover-score').textContent, 10)
 
     const highscores = savePlayerScore(nickname, score)
@@ -56,6 +57,21 @@ if (btnSaveScore) {
 
     if (highscoreTable) {
       highscoreTable.classList.remove('hidden')
+    }
+
+    // 🔒 Block second entry:
+    // - clear input
+    // - disable input and button
+    // - hide nickname block
+    if (nicknameInput) {
+      nicknameInput.value = ''
+      nicknameInput.disabled = true
+    }
+    if (btnSaveScore) {
+      btnSaveScore.disabled = true
+    }
+    if (nicknameBox) {
+      nicknameBox.classList.add('hidden') // class use .hidden (display:none)
     }
   })
 }
@@ -70,10 +86,23 @@ function restartGame() {
   // Reset logical game state
   restartState(state)
 
-  // limpiar UI de game over / leaderboard
-  if (nicknameInput) nicknameInput.value = ''
-  if (highscoreBody) highscoreBody.innerHTML = ''
-  if (highscoreTable) highscoreTable.classList.add('hidden')
+  // 🔄 Reset UI de Game Over / Leaderboard / Nickname
+  if (nicknameInput) {
+    nicknameInput.value = ''
+    nicknameInput.disabled = false
+  }
+  if (btnSaveScore) {
+    btnSaveScore.disabled = false
+  }
+  if (nicknameBox) {
+    nicknameBox.classList.remove('hidden')
+  }
+  if (highscoreBody) {
+    highscoreBody.innerHTML = ''
+  }
+  if (highscoreTable) {
+    highscoreTable.classList.add('hidden')
+  }
 
   createBricks(state, dom)
   resetBallAndPaddle(state)
