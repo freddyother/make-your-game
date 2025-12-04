@@ -1,6 +1,8 @@
 {
   "name": "brick-breaker",
   "version": "1.0.0",
+  "description": "Brick breaker game with powerups and localStorage leaderboard",
+  "main": "server.js",
   "type": "module",
   "scripts": {
     "start": "node server.js"
