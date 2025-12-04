@@ -13,8 +13,8 @@ import { updateHUD } from './ui/hud.js'
 import { showPauseOverlay, showGameOver } from './ui/overlays.js'
 
 import { updatePaddle, updateBall } from './systems/physics.js'
-import { handleWorldCollisions, handlePaddleCollision, handleBrickCollisions } from './systems/collision.js'
 import { createBricks, loseLife, restartState, resetBallAndPaddle, advanceLevel, maybeSpawnPowerUps, updatePowerUps } from './systems/rules.js'
+import { handleWorldCollisions, handlePaddleCollision, handleBrickCollisions } from './systems/collision.js'
 
 const state = createInitialState()
 const dom = getDomRefs()
@@ -23,7 +23,7 @@ const { inputState, getSnapshot } = createInput()
 createBricks(state, dom)
 resetBallAndPaddle(state)
 
-// Bottons UI
+// UI Buttons
 dom.btnContinue.addEventListener('click', () => {
   state.isPaused = false
   showPauseOverlay(dom, false)
@@ -36,13 +36,14 @@ dom.btnRestartGameOver.addEventListener('click', () => {
 })
 
 function restartGame() {
-  restartState(state)
-
   // clear power-ups from the DOM
   state.powerUps.forEach((pu) => {
     if (pu.dom) pu.dom.remove()
   })
   state.powerUps = []
+
+  //  Reset the logical game status
+  restartState(state)
 
   createBricks(state, dom)
   resetBallAndPaddle(state)
@@ -57,9 +58,30 @@ function update(delta, fps) {
     return
   }
 
+  // === POWER-UP TIMERS ===
+
+  // SLOW: reduce la velocidad de la bola durante slowTimer segundos
+  if (state.slowActive) {
+    state.slowTimer -= delta
+    if (state.slowTimer <= 0) {
+      state.slowActive = false
+      state.slowTimer = 0
+    }
+  }
+
+  // SCORE X2: mientras scoreMultiplierTimer > 0 usamos el multiplicador;
+  // cuando llega a cero, volvemos a x1
+  if (state.scoreMultiplierTimer > 0) {
+    state.scoreMultiplierTimer -= delta
+    if (state.scoreMultiplierTimer <= 0) {
+      state.scoreMultiplierTimer = 0
+      state.scoreMultiplier = 1
+    }
+  }
+
   const input = getSnapshot()
 
-  // pause control with Space (flank detect)
+  // pause control with Space (edge detect)
   // Throw the ball if it is stuck to the paddle.
   if (state.ball.stuckToPaddle && input.pausePressed && !inputState.lastPausePressed) {
     state.ball.stuckToPaddle = false // Throw the ball
@@ -75,6 +97,7 @@ function update(delta, fps) {
 
   state.timeElapsed += delta
 
+  // movimiento de paddle + bola (con slow aplicado en updateBall)
   updatePaddle(state, input, delta)
   updateBall(state, delta)
 
@@ -87,7 +110,13 @@ function update(delta, fps) {
 
   const destroyedBricks = handleBrickCollisions(state)
   if (destroyedBricks.length > 0) {
-    state.score += destroyedBricks.length * 10 * state.level
+    // base score: 10 puntos por ladrillo * nivel
+    const base = destroyedBricks.length * 10 * state.level
+
+    // aplicar multiplicador (scorex2)
+    const multiplier = state.scoreMultiplier || 1
+    state.score += base * multiplier
+
     state.bricksRemaining -= destroyedBricks.length
 
     maybeSpawnPowerUps(state, destroyedBricks, dom)

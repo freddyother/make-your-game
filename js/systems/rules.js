@@ -1,8 +1,12 @@
-/* Implements the core gameplay rules.  
-Creates and manages the brick grid, handles life loss, game restart and ball resets.  
-Controls scoring, state transitions and game-over conditions.
+/* Implements the core gameplay rules.
+   Creates and manages the brick grid, handles life loss, game restart and ball resets.
+   Controls scoring, state transitions and game-over conditions, including power-ups.
 */
 import { CONFIG } from '../config.js'
+
+const SLOW_FACTOR = 0.5 // ball at 50% speed
+const SLOW_DURATION = 8 // slow effect seconds
+const SCORE_X2_DURATION = 10 // score seconds x2
 
 function getBallSpeedForLevel(level) {
   const base = CONFIG.BALL_SPEED
@@ -55,7 +59,7 @@ export function loseLife(state) {
 }
 
 export function resetBallAndPaddle(state) {
-  const { GAME_WIDTH, GAME_HEIGHT, HUD_HEIGHT, PADDLE_WIDTH } = CONFIG
+  const { GAME_WIDTH, GAME_HEIGHT, HUD_HEIGHT } = CONFIG
   const p = state.paddle
   const b = state.ball
 
@@ -80,6 +84,16 @@ export function restartState(state) {
 
   state.powerUps = []
   state.paddle.width = CONFIG.PADDLE_WIDTH
+
+  // temporary effects
+  state.slowActive = false
+  state.slowTimer = 0
+  state.scoreMultiplier = 1
+  state.scoreMultiplierTimer = 0
+
+  // (real multi-ball will require more changes to the engine;
+  // here we just leave the hook ready)
+  state.multiballActive = false
 }
 
 // Level up: reset ball/paddle, recreate bricks and increase speed
@@ -89,11 +103,56 @@ export function advanceLevel(state, dom) {
   resetBallAndPaddle(state)
 }
 
+/**
+ * Decide what type of power-up to generate, with distribution:
+ * - shrink (power-down): 10% of possible power-ups,
+ * only available if the paddle is already at maximum size.
+ * - the remaining 90% is divided equally between:
+ * life, widen, multiball, slow, scorex2.
+ */
+function choosePowerupKind(state) {
+  const basePaddleWidth = CONFIG.PADDLE_WIDTH
+  const maxPaddleWidth = basePaddleWidth * 2
+
+  const canSpawnShrink = state.paddle.width >= maxPaddleWidth - 0.5
+
+  // relative weights (normalised later)
+  const weights = {
+    shrink: 0.1, // 10% reserved for power-down
+    life: 0.18,
+    widen: 0.18,
+    multiball: 0.18,
+    slow: 0.18,
+    scorex2: 0.18,
+  }
+
+  const available = ['life', 'widen', 'multiball', 'slow', 'scorex2']
+  if (canSpawnShrink) {
+    available.push('shrink')
+  }
+
+  let totalWeight = 0
+  available.forEach((k) => {
+    totalWeight += weights[k]
+  })
+
+  let r = Math.random() * totalWeight
+  for (const kind of available) {
+    if (r < weights[kind]) {
+      return kind
+    }
+    r -= weights[kind]
+  }
+
+  // defensive fallback
+  return 'life'
+}
+
 // Create power-ups from destroyed bricks
 export function maybeSpawnPowerUps(state, destroyedBricks, dom) {
   destroyedBricks.forEach((brick) => {
     if (Math.random() < CONFIG.POWERUP_CHANCE) {
-      const kind = Math.random() < 0.5 ? 'life' : 'widen'
+      const kind = choosePowerupKind(state)
 
       const pu = {
         x: brick.x + brick.width / 2 - CONFIG.POWERUP_SIZE / 2,
@@ -129,14 +188,14 @@ export function updatePowerUps(state, delta, dom) {
       pu.dom.style.top = pu.y + 'px'
     }
 
-    // scooped up by the shovel
+    // collected by the paddle
     if (rectIntersect(pu.x, pu.y, pu.size, pu.size, p.x, p.y, p.width, p.height)) {
       applyPowerUp(state, pu)
       if (pu.dom) pu.dom.remove()
       return false
     }
 
-    // fall out
+    // falls out of screen
     if (pu.y > GAME_HEIGHT) {
       if (pu.dom) pu.dom.remove()
       return false
@@ -147,11 +206,44 @@ export function updatePowerUps(state, delta, dom) {
 }
 
 function applyPowerUp(state, powerUp) {
-  if (powerUp.kind === 'life') {
-    state.lives += 1
-  } else if (powerUp.kind === 'widen') {
-    const maxWidth = CONFIG.PADDLE_WIDTH * 2
-    state.paddle.width = Math.min(state.paddle.width * 1.3, maxWidth)
+  const baseWidth = CONFIG.PADDLE_WIDTH
+  const maxWidth = baseWidth * 2
+
+  switch (powerUp.kind) {
+    case 'life':
+      state.lives += 1
+      break
+
+    case 'widen':
+      state.paddle.width = Math.min(state.paddle.width * 1.3, maxWidth)
+      break
+
+    case 'shrink':
+      // power-down: reduce the paddle step by step,
+      const factor = 1 / 1.3 //  reverse of growth (~0.77)
+      const newWidth = state.paddle.width * factor
+      state.paddle.width = Math.max(newWidth, baseWidth)
+      break
+
+    case 'multiball':
+      // Hook for multi-ball; here we mark the status.
+      // For real multi-ball, the engine will need to be extended
+      // (manage multiple balls in physics/collision/render).
+      state.multiballActive = true
+      break
+
+    case 'slow':
+      state.slowActive = true
+      state.slowTimer = SLOW_DURATION
+      break
+
+    case 'scorex2':
+      state.scoreMultiplier = 2
+      state.scoreMultiplierTimer = SCORE_X2_DURATION
+      break
+
+    default:
+      break
   }
 }
 

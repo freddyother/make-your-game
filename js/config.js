@@ -12,7 +12,7 @@ export const CONFIG = {
   PADDLE_SPEED: 400,
 
   BALL_SIZE: 14,
-  BALL_SPEED: 350,
+  BALL_SPEED: 250,
 
   BRICK_ROWS: 5,
   BRICK_COLS: 8,
@@ -27,5 +27,5 @@ export const CONFIG = {
   // --- NEW: power-ups & difficulty ---
   POWERUP_SIZE: 18,
   POWERUP_SPEED: 120,
-  POWERUP_CHANCE: 0.3, // 30% chance per destroyed brick
+  POWERUP_CHANCE: 0.2, // 30% chance per destroyed brick
 }

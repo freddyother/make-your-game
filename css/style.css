@@ -130,14 +130,35 @@ button:hover {
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: #4caf50;
   box-shadow: 0 0 8px rgba(0, 0, 0, 0.6);
 }
 
+/* green extra life */
 .powerup-life {
-  background: #ff5722;
+  background: #4caf50;
 }
 
+/* blue big paddle */
 .powerup-widen {
-  background: #4caf50;
+  background: #2196f3;
+}
+
+/* Power-down: small paddle  (red) */
+.powerup-shrink {
+  background: #a70000;
+}
+
+/* Multi-ball: orange */
+.powerup-multiball {
+  background: #ff9800;
+}
+
+/* Slow: purple */
+.powerup-slow {
+  background: #9c27b0;
+}
+
+/* Score x2: golden yellow */
+.powerup-scorex2 {
+  background: #ffc107;
 }
