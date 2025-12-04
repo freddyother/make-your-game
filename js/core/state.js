@@ -7,6 +7,16 @@ import { CONFIG } from '../config.js'
 export function createInitialState() {
   const { GAME_WIDTH, GAME_HEIGHT, HUD_HEIGHT, PADDLE_WIDTH, PADDLE_HEIGHT, BALL_SIZE, BALL_SPEED, INITIAL_LIVES } = CONFIG
 
+  // main ball
+  const mainBall = {
+    x: GAME_WIDTH / 2,
+    y: GAME_HEIGHT / 2,
+    vx: BALL_SPEED,
+    vy: -BALL_SPEED,
+    size: BALL_SIZE,
+    stuckToPaddle: true,
+  }
+
   return {
     isPaused: false,
     isGameOver: false,
@@ -32,15 +42,11 @@ export function createInitialState() {
       height: PADDLE_HEIGHT,
     },
 
-    // For now, we are continuing with a single main ball.
-    ball: {
-      x: GAME_WIDTH / 2,
-      y: GAME_HEIGHT / 2,
-      vx: BALL_SPEED,
-      vy: -BALL_SPEED,
-      size: BALL_SIZE,
-      stuckToPaddle: true,
-    },
+    // main ball (compat with old code)
+    ball: mainBall,
+
+    // array with ALL balls (main + extra)
+    extraBalls: [],
 
     bricks: [],
 
@@ -53,7 +59,7 @@ export function createInitialState() {
 
     scoreMultiplierTimer: 0, // countdown to score x2
 
-    // hook for multi-ball (we will use it when we extend the engine)
+    // multi-ball activado alguna vez
     multiballActive: false,
   }
 }

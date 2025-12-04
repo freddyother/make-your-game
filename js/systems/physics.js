@@ -1,12 +1,13 @@
-/* Applies movement and physics to the paddle and ball.
-   Handles paddle motion from input and ball position updates with optional slow effect.
+/* Applies movement and physics to the paddle and balls.
+   Handles paddle motion from input and updates position of
+   the main ball and any extra balls, with optional slow effect.
 */
 import { CONFIG } from '../config.js'
 
 export function updatePaddle(state, input, delta) {
   const p = state.paddle
 
-  // movimiento horizontal según teclado
+  // horizontal movement according to keyboard
   if (input.left) {
     p.x -= CONFIG.PADDLE_SPEED * delta
   }
@@ -14,29 +15,31 @@ export function updatePaddle(state, input, delta) {
     p.x += CONFIG.PADDLE_SPEED * delta
   }
 
-  // mantener la pala dentro de los límites
+  // keep the paddle within the limits
   if (p.x < 0) p.x = 0
   const maxX = CONFIG.GAME_WIDTH - p.width
   if (p.x > maxX) p.x = maxX
 
-  // si la bola está pegada a la pala, la acompañamos
-  if (state.ball.stuckToPaddle) {
-    const b = state.ball
+  // any ball is stuck to the paddle
+  const balls = [state.ball, ...(state.extraBalls || [])]
+
+  balls.forEach((b) => {
+    if (!b || !b.stuckToPaddle) return
     b.x = p.x + p.width / 2 - b.size / 2
     b.y = p.y - b.size - 4
-  }
+  })
 }
 
 export function updateBall(state, delta) {
-  const b = state.ball
-  if (b.stuckToPaddle) return
+  const balls = [state.ball, ...(state.extraBalls || [])]
 
-  // slow effect → reduce velocidad mientras slowActive sea true
-  let speedModifier = 1
-  if (state.slowActive) {
-    speedModifier = 0.5 // 50% de velocidad
-  }
+  // slow effect → reduce speed while slowActive is true
+  const speedModifier = state.slowActive ? 0.5 : 1
 
-  b.x += b.vx * delta * speedModifier
-  b.y += b.vy * delta * speedModifier
+  balls.forEach((b) => {
+    if (!b || b.stuckToPaddle) return
+
+    b.x += b.vx * delta * speedModifier
+    b.y += b.vy * delta * speedModifier
+  })
 }

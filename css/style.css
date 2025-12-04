@@ -64,7 +64,8 @@ body {
 }
 
 /* Ball */
-#ball {
+#ball,
+.ball-extra {
   position: absolute;
   width: 14px;
   height: 14px;
@@ -150,7 +151,7 @@ button:hover {
 
 /* Multi-ball: orange */
 .powerup-multiball {
-  background: #ff9800;
+  background: #ff00aa;
 }
 
 /* Slow: purple */

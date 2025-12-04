@@ -196,14 +196,37 @@ function update(delta, fps) {
 // GLOBAL RENDER
 function render() {
   const p = state.paddle
-  const b = state.ball
-
   dom.paddleEl.style.left = p.x + 'px'
   dom.paddleEl.style.top = p.y + 'px'
   dom.paddleEl.style.width = p.width + 'px'
 
-  dom.ballEl.style.left = b.x + 'px'
-  dom.ballEl.style.top = b.y + 'px'
+  const balls = [state.ball, ...(state.extraBalls || [])].filter(Boolean)
+
+  // main ball uses the existing #ball
+  if (balls[0]) {
+    const b0 = balls[0]
+    dom.ballEl.style.left = b0.x + 'px'
+    dom.ballEl.style.top = b0.y + 'px'
+    b0.dom = dom.ballEl
+  }
+
+  // clean extra old balls
+  const oldExtras = dom.gameArea.querySelectorAll('.ball-extra')
+  oldExtras.forEach((el) => el.remove())
+
+  // create/place extra balls
+  for (let i = 1; i < balls.length; i++) {
+    const b = balls[i]
+    const el = document.createElement('div')
+
+    el.classList.add('ball-extra')
+
+    el.style.left = b.x + 'px'
+    el.style.top = b.y + 'px'
+
+    dom.gameArea.appendChild(el)
+    b.dom = el
+  }
 }
 
 // Start Loop

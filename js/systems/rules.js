@@ -59,7 +59,7 @@ export function loseLife(state) {
 }
 
 export function resetBallAndPaddle(state) {
-  const { GAME_WIDTH, GAME_HEIGHT, HUD_HEIGHT } = CONFIG
+  const { GAME_WIDTH, GAME_HEIGHT, HUD_HEIGHT, BALL_SIZE } = CONFIG
   const p = state.paddle
   const b = state.ball
 
@@ -67,9 +67,18 @@ export function resetBallAndPaddle(state) {
   p.y = GAME_HEIGHT - HUD_HEIGHT - 40
 
   const speed = getBallSpeedForLevel(state.level || 1)
+
+  // main ball reattaches to the paddle
   b.stuckToPaddle = true
+  b.size = BALL_SIZE
   b.vx = speed
   b.vy = -speed
+
+  // The actual position is adjusted in updateBall when it is stuckToPaddle.
+
+  // clear any extra balls
+  state.extraBalls = []
+  state.multiballActive = false
 }
 
 export function restartState(state) {
@@ -91,9 +100,9 @@ export function restartState(state) {
   state.scoreMultiplier = 1
   state.scoreMultiplierTimer = 0
 
-  // (real multi-ball will require more changes to the engine;
-  // here we just leave the hook ready)
+  // multi-ball
   state.multiballActive = false
+  state.extraBalls = []
 }
 
 // Level up: reset ball/paddle, recreate bricks and increase speed
@@ -197,6 +206,37 @@ export function updatePowerUps(state, delta, dom) {
   })
 }
 
+// Create N extra balls from the main ball
+function spawnExtraBalls(state, count) {
+  const main = state.ball
+  if (!main) return
+
+  const speed = Math.hypot(main.vx, main.vy) || getBallSpeedForLevel(state.level || 1)
+
+  const balls = state.extraBalls || []
+  const baseAngle = Math.atan2(main.vy, main.vx) || -Math.PI / 3 // somewhat upwards
+
+  const spread = Math.PI / 8 // ball separation
+
+  for (let i = 0; i < count; i++) {
+    const angle = baseAngle + (i - (count - 1) / 2) * spread
+    const vx = Math.cos(angle) * speed
+    const vy = Math.sin(angle) * speed
+
+    balls.push({
+      x: main.x,
+      y: main.y,
+      vx,
+      vy,
+      size: main.size,
+      stuckToPaddle: false,
+      dom: null, // will be created in render()
+    })
+  }
+
+  state.extraBalls = balls
+}
+
 function applyPowerUp(state, powerUp) {
   const baseWidth = CONFIG.PADDLE_WIDTH
   const maxWidth = baseWidth * 2
@@ -216,10 +256,11 @@ function applyPowerUp(state, powerUp) {
       break
 
     case 'multiball':
-      // Hook for multi-ball; here we mark the status.
-      // For real multi-ball, the engine will need to be extended
-      // (manage multiple balls in physics/collision/render).
-      state.multiballActive = true
+      // only triggered multi-ball if there was no extra already
+      if (!state.multiballActive) {
+        spawnExtraBalls(state, 2) // 2 extra balls
+        state.multiballActive = true
+      }
       break
 
     case 'slow':
