@@ -58,10 +58,10 @@ make-your-game/
 │   │   ├── physics.js      # Ball & paddle physics (movement, slow effect)
 │   │   └── rules.js        # Game rules, levels, power-ups & power-downs
 │   ├── ui/
-│   │   ├── config.js       # Global configuration (sizes, speeds, constants)
 │   │   ├── dom.js          # DOM element lookups
 │   │   ├── hud.js          # HUD updates (score, time, level, FPS)
 │   │   └── overlays.js     # Pause and game-over overlays
+│   │── config.js           # Global configuration (sizes, speeds, constants)
 │   └── main.js             # Game entry point and orchestration
 ├── index.html              # Main HTML shell
 ├── server.js               # Small Express server to serve the static game
