@@ -21,7 +21,7 @@ The project is fully client-side (no database) and is served by a small Node/Exp
   - **Shrink paddle** (red, power-down) – paddle shrinks back down in steps towards the original size.
   - **Slow motion** – temporarily reduces ball speed.
   - **Score ×2** – temporary score multiplier.
-  - **Multi-ball hook** – state and power-up prepared for future multi-ball support.
+  - **Multi-ball hook** – Collecting this power-up splits the main ball into several active balls, allowing multiple brick hits at once.
 
 - **HUD**
 
@@ -141,9 +141,9 @@ Break all bricks to advance to the next level.
 | Extra life    | Green  | +1 life                                           |
 | Widen paddle  | Blue   | Increases paddle width up to a maximum limit      |
 | Shrink paddle | Red    | Decreases paddle width towards the original size  |
-| Slow          | purple | Temporarily halves ball speed                     |
-| Score ×2      | yellow | Temporarily doubles all score gained              |
-| Multi-ball    | red    | State/plumbing prepared for future implementation |
+| Slow          | Purple | Temporarily halves ball speed                     |
+| Score ×2      | Yellow | Temporarily doubles all score gained              |
+| Multi-ball    | Red    | State/plumbing prepared for future implementation |
 
 _(Colours depend on your final CSS classes.)_
 
@@ -193,7 +193,6 @@ as static assets.
 
 ## 🧪 Ideas for future improvements
 
-- Full multi-ball support (multiple balls in physics/collision/render).
 - Sound effects + background music.
 - Mobile / touch controls.
 - More brick types (HP bricks, unbreakable bricks, bonus bricks).
