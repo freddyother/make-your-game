@@ -74,48 +74,19 @@ make-your-game/
 ## 🔧 Technologies
 
 - **HTML5 / CSS3 / JavaScript (ES Modules)**
-- **Node.js + Express** (static server)
+- **Node.js + Express or Phyton** (static server)
 - **LocalStorage** for persistent leaderboard
 
 ---
 
 ## 🚀 Getting started (local)
 
-### 1. Prerequisites
-
-- **Node.js** (LTS recommended)
-- **npm** (comes with Node)
-
-> 💡 On Kali or other Linux distros, it is advisable to install Node using **nvm** instead of `apt`, to avoid conflicts with system packages.
-
----
-
-### 2. Install dependencies
-
-From the project root:
+- **Phyton** Run on Phyton
 
 ```bash
-npm install
-```
+$ Phyton -m http.server 5500
 
-## This installs express and any other dependencies defined in package.json.
-
-### 3. Run the server
-
-```bash
-npm start
-```
-
-By default, server.js will:
-
-- Read the port from process.env.PORT (for platforms like Render).
-
-- Fallback to a local port (e.g. 3000) when running manually.
-
-Then open your browser at:
-
-```bash
-http://localhost:3000
+http://localhost:5500
 ```
 
 (or the port printed in your terminal).
