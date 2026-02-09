@@ -16,6 +16,41 @@ import { updatePaddle, updateBall } from './systems/physics.js'
 import { createBricks, loseLife, restartState, resetBallAndPaddle, advanceLevel, maybeSpawnPowerUps, updatePowerUps } from './systems/rules.js'
 import { handleWorldCollisions, handlePaddleCollision, handleBrickCollisions } from './systems/collision.js'
 
+// === MOBILE: lock page scrolling (iPhone/Android) ===
+lockPageScrollOnTouchDevices()
+
+function lockPageScrollOnTouchDevices() {
+  const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0
+
+  if (!isTouch) return // en PC no tocamos nada
+
+  // CSS lock (por si el CSS no se cargó o no es suficiente)
+  const html = document.documentElement
+  const body = document.body
+
+  html.style.overflow = 'hidden'
+  html.style.height = '100%'
+
+  body.style.overflow = 'hidden'
+  body.style.height = '100%'
+  body.style.position = 'fixed' // iOS Safari: evita que el body se “arrastre”
+  body.style.inset = '0'
+  body.style.width = '100%'
+
+  // iOS Safari / Android: bloquea scroll por gesto
+  const prevent = (e) => {
+    if (e.cancelable) e.preventDefault()
+  }
+
+  window.addEventListener('touchmove', prevent, { passive: false })
+
+  // Bloquea scroll con rueda / trackpad (por si acaso en móviles/tablets)
+  window.addEventListener('wheel', prevent, { passive: false })
+
+  // Bloquea gestos tipo pinch/zoom que a veces “mueven” la página
+  window.addEventListener('gesturestart', prevent, { passive: false })
+}
+
 const state = createInitialState()
 const dom = getDomRefs()
 const { inputState, getSnapshot } = createInput()
