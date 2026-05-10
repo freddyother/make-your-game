@@ -12,6 +12,8 @@ export function createInitialState() {
   const mainBall = {
     x: GAME_WIDTH / 2,
     y: GAME_HEIGHT / 2,
+    prevX: GAME_WIDTH / 2,
+    prevY: GAME_HEIGHT / 2,
     vx: BALL_SPEED,
     vy: -BALL_SPEED,
     size: BALL_SIZE,

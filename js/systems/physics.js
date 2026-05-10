@@ -29,6 +29,8 @@ export function updatePaddle(state, input, delta) {
 
   balls.forEach((b) => {
     if (!b || !b.stuckToPaddle) return
+    b.prevX = b.x
+    b.prevY = b.y
     b.x = p.x + p.width / 2 - b.size / 2
     b.y = p.y - b.size - 4
   })
@@ -43,6 +45,8 @@ export function updateBall(state, delta) {
   balls.forEach((b) => {
     if (!b || b.stuckToPaddle) return
 
+    b.prevX = b.x
+    b.prevY = b.y
     b.x += b.vx * delta * speedModifier
     b.y += b.vy * delta * speedModifier
   })

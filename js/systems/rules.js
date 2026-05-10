@@ -78,6 +78,8 @@ export function resetBallAndPaddle(state) {
   const speed = getBallSpeedForLevel(state.level || 1)
 
   // main ball reattaches to the paddle
+  b.prevX = b.x
+  b.prevY = b.y
   b.stuckToPaddle = true
   b.size = BALL_SIZE
   b.vx = speed
@@ -236,6 +238,8 @@ function spawnExtraBalls(state, count) {
     balls.push({
       x: main.x,
       y: main.y,
+      prevX: main.x,
+      prevY: main.y,
       vx,
       vy,
       size: main.size,
