@@ -1,46 +1,53 @@
-/*
-highscores
+const API_URL = '/api/highscores'
 
-
-*/
-
-const STORAGE_KEY = 'brickbreaker_highscores_v1'
-
-export function loadHighscores() {
-  const raw = localStorage.getItem(STORAGE_KEY)
-  if (!raw) return []
+async function requestJson(url, options = {}) {
+  let response
   try {
-    const parsed = JSON.parse(raw)
-    if (!Array.isArray(parsed)) return []
-    return parsed
+    response = await fetch(url, options)
   } catch {
-    return []
+    throw new Error(getApiUnavailableMessage())
   }
+
+  const data = await response.json().catch(() => ({}))
+
+  if (!response.ok) {
+    if (isStaticServerPort()) {
+      throw new Error(getApiUnavailableMessage())
+    }
+    throw new Error(data.error || 'Highscore request failed')
+  }
+
+  return data
 }
 
-export function saveHighscores(list) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(list))
+function isStaticServerPort() {
+  return window.location.port === '8080'
 }
 
-// Add a new score, sort and cut to top 10.
-// Return the final sorted list.
-export function addHighscore(name, score) {
-  const cleanName = (name || 'PLAYER').trim().slice(0, 10) || 'PLAYER'
-  const list = loadHighscores()
+function getApiUnavailableMessage() {
+  if (isStaticServerPort()) {
+    return 'Scores need the Node server. Open http://localhost:3000 instead of :8080.'
+  }
 
-  list.push({
-    name: cleanName,
-    score,
-    ts: Date.now(),
+  return 'Could not reach the score API. Check that npm start and PostgreSQL are running.'
+}
+
+export async function loadHighscores() {
+  const data = await requestJson(API_URL)
+  return Array.isArray(data.list) ? data.list : []
+}
+
+export async function addHighscore(nickname, score) {
+  const data = await requestJson(API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ nickname, score }),
   })
 
-  // // sort: highest score first; if tied, oldest first
-  list.sort((a, b) => {
-    if (b.score !== a.score) return b.score - a.score
-    return a.ts - b.ts
-  })
-
-  const top10 = list.slice(0, 10)
-  saveHighscores(top10)
-  return top10
+  return {
+    list: Array.isArray(data.list) ? data.list : [],
+    highlightIndex: Number.isInteger(data.highlightIndex) ? data.highlightIndex : -1,
+  }
 }

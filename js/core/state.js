@@ -31,6 +31,7 @@ export function createInitialState() {
     scoreMultiplier: 1,
 
     isMobile: CONFIG.IS_MOBILE,
+    hasTouch: CONFIG.HAS_TOUCH,
     gameWidth: GAME_WIDTH,
     gameHeight: GAME_HEIGHT,
     hudHeight: HUD_HEIGHT,

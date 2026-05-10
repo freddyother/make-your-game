@@ -7,7 +7,7 @@ import { CONFIG } from '../config.js'
 export function updatePaddle(state, input, delta) {
   const p = state.paddle
 
-  if (state.isMobile && input.pointerActive && Number.isFinite(input.pointerX)) {
+  if (state.hasTouch && input.pointerActive && Number.isFinite(input.pointerX)) {
     p.x = input.pointerX - p.width / 2
   } else {
     // horizontal movement according to keyboard

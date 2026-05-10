@@ -4,6 +4,7 @@ Provides a single source of truth for numerical values to keep the game easily a
 */
 export const CONFIG = {
   IS_MOBILE: false,
+  HAS_TOUCH: false,
 
   GAME_WIDTH: 736,
   GAME_HEIGHT: 600,
@@ -29,7 +30,8 @@ export const CONFIG = {
   // --- NEW: power-ups & difficulty ---
   POWERUP_SIZE: 18,
   POWERUP_SPEED: 120,
-  POWERUP_CHANCE: 0.2, // 30% chance per destroyed brick
+  POWERUP_CHANCE: 0.2, // 20% chance per destroyed brick
+  POWERUP_DISABLED_LAST_BRICKS: 3,
 
   PADDLE_BOTTOM_OFFSET: 40,
 }
@@ -39,12 +41,18 @@ export function configureForViewport() {
   const viewportWidth = Math.round(viewport?.width || window.innerWidth || CONFIG.GAME_WIDTH)
   const viewportHeight = Math.round(viewport?.height || window.innerHeight || CONFIG.GAME_HEIGHT + CONFIG.HUD_HEIGHT)
   const shortSide = Math.min(viewportWidth, viewportHeight)
-  const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0 || window.matchMedia('(pointer: coarse)').matches
+  const maxTouchPoints = navigator.maxTouchPoints || navigator.msMaxTouchPoints || 0
+  const hasTouchApi = 'ontouchstart' in window || maxTouchPoints > 0
+  const hasCoarsePointer = window.matchMedia('(pointer: coarse)').matches || window.matchMedia('(any-pointer: coarse)').matches
   const isMobileUserAgent = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)
+  const isIpadDesktopUserAgent = /Macintosh/i.test(navigator.userAgent) && maxTouchPoints > 1
+  const hasTouchControls = hasTouchApi || hasCoarsePointer || isMobileUserAgent || isIpadDesktopUserAgent
   const isPhoneViewport = shortSide <= 540 && viewportHeight >= viewportWidth
-  const isPhoneLike = isPhoneViewport && (isTouchDevice || isMobileUserAgent || viewportWidth <= 430)
+  const isPhoneLike = isPhoneViewport && (hasTouchControls || viewportWidth <= 430)
 
+  CONFIG.HAS_TOUCH = hasTouchControls
   CONFIG.IS_MOBILE = isPhoneLike
+  document.documentElement.classList.toggle('is-touch-game', hasTouchControls)
   document.documentElement.classList.toggle('is-mobile-game', isPhoneLike)
 
   if (!isPhoneLike) return CONFIG

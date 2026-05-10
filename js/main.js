@@ -13,8 +13,9 @@ import { updateHUD } from './ui/hud.js'
 import { showPauseOverlay, showGameOver } from './ui/overlays.js'
 
 import { updatePaddle, updateBall } from './systems/physics.js'
-import { createBricks, loseLife, restartState, resetBallAndPaddle, advanceLevel, maybeSpawnPowerUps, updatePowerUps } from './systems/rules.js'
+import { createBricks, loseLife, restartState, resetBallAndPaddle, advanceLevel, clearPowerUps, maybeSpawnPowerUps, updatePowerUps } from './systems/rules.js'
 import { handleWorldCollisions, handlePaddleCollision, handleBrickCollisions } from './systems/collision.js'
+import { addHighscore } from './systems/highscores.js'
 import { CONFIG, configureForViewport } from './config.js'
 
 // === MOBILE: lock page scrolling (iPhone/Android) ===
@@ -22,7 +23,7 @@ configureForViewport()
 lockPageScrollOnTouchDevices()
 
 function lockPageScrollOnTouchDevices() {
-  const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0
+  const isTouch = CONFIG.HAS_TOUCH
 
   if (!isTouch) return // en PC no tocamos nada
 
@@ -66,6 +67,7 @@ const btnSaveScore = document.getElementById('btn-save-score')
 const highscoreTable = document.getElementById('highscore-table')
 const highscoreBody = document.getElementById('highscore-body')
 const nicknameBox = document.getElementById('nickname-box')
+const highscoreStatus = document.getElementById('highscore-status')
 
 // UI Buttons
 dom.btnContinue.addEventListener('click', () => {
@@ -83,34 +85,44 @@ dom.btnRestartGameOver.addEventListener('click', () => {
 
 // we read the score displayed in the overlay
 if (btnSaveScore) {
-  btnSaveScore.addEventListener('click', () => {
+  btnSaveScore.addEventListener('click', async () => {
     const nickname = (nicknameInput?.value.trim().substring(0, 10) || 'Player').toUpperCase()
 
     // we read the score displayed in the overlay
-    const score = parseInt(document.getElementById('gameover-score').textContent, 10)
-
-    // ⬇️ now we receive list + highlighted index
-    const { list, highlightIndex } = savePlayerScore(nickname, score)
-
-    renderHighScores(highscoreBody, list, highlightIndex)
-
-    if (highscoreTable) {
-      highscoreTable.classList.remove('hidden')
+    const score = Number.parseInt(document.getElementById('gameover-score').textContent, 10)
+    if (Number.isNaN(score)) {
+      setHighscoreStatus('Could not read the final score.', true)
+      return
     }
 
-    // 🔒 Block second entry:
-    // - clear input
-    // - disable input and button
-    // - hide nickname block
-    if (nicknameInput) {
-      nicknameInput.value = ''
-      nicknameInput.disabled = true
-    }
-    if (btnSaveScore) {
-      btnSaveScore.disabled = true
-    }
-    if (nicknameBox) {
-      nicknameBox.classList.add('hidden') // class use .hidden (display:none)
+    btnSaveScore.disabled = true
+    setHighscoreStatus('Saving score...')
+
+    try {
+      const { list, highlightIndex } = await addHighscore(nickname, score)
+
+      renderHighScores(highscoreBody, list, highlightIndex)
+
+      if (highscoreTable) {
+        highscoreTable.classList.remove('hidden')
+      }
+
+      setHighscoreStatus(highlightIndex === -1 ? 'Score saved. Top 5 unchanged.' : 'Score saved.')
+
+      // 🔒 Block second entry:
+      // - clear input
+      // - disable input and button
+      // - hide nickname block
+      if (nicknameInput) {
+        nicknameInput.value = ''
+        nicknameInput.disabled = true
+      }
+      if (nicknameBox) {
+        nicknameBox.classList.add('hidden') // class use .hidden (display:none)
+      }
+    } catch (error) {
+      setHighscoreStatus(error.message || 'Could not save score.', true)
+      btnSaveScore.disabled = false
     }
   })
 }
@@ -142,6 +154,7 @@ function restartGame() {
   if (highscoreTable) {
     highscoreTable.classList.add('hidden')
   }
+  setHighscoreStatus('')
 
   createBricks(state, dom)
   resetBallAndPaddle(state)
@@ -182,7 +195,7 @@ function update(delta, fps) {
   const launchPressed = input.pausePressed || input.launchPressed
   const launchEdge = launchPressed && !inputState.lastLaunchPressed
   const pauseEdge = input.pausePressed && !inputState.lastPausePressed
-  const mobileDoubleTapEdge = state.isMobile && input.launchPressed && !inputState.lastLaunchPressed
+  const touchDoubleTapEdge = state.hasTouch && input.launchPressed && !inputState.lastLaunchPressed
 
   // pause control with Space (edge detect)
   // Throw the ball if it is stuck to the paddle.
@@ -190,7 +203,7 @@ function update(delta, fps) {
     state.ball.stuckToPaddle = false // Throw the ball
 
     // If the ball is already in play, use space to pause.
-  } else if (pauseEdge || (mobileDoubleTapEdge && !state.isPaused)) {
+  } else if (pauseEdge || (touchDoubleTapEdge && !state.isPaused)) {
     state.isPaused = !state.isPaused
     showPauseOverlay(dom, state.isPaused)
   }
@@ -214,6 +227,9 @@ function update(delta, fps) {
 
   const destroyedBricks = handleBrickCollisions(state)
   if (destroyedBricks.length > 0) {
+    const bricksRemainingBeforeHit = state.bricksRemaining
+    const levelClearedByThisHit = destroyedBricks.length >= bricksRemainingBeforeHit
+
     // base score: 10 points per brick * level
     const base = destroyedBricks.length * 10 * state.level
 
@@ -221,15 +237,20 @@ function update(delta, fps) {
     const multiplier = state.scoreMultiplier || 1
     state.score += base * multiplier
 
-    state.bricksRemaining -= destroyedBricks.length
+    state.bricksRemaining = Math.max(0, state.bricksRemaining - destroyedBricks.length)
 
-    if (state.bricksRemaining <= 0) {
+    if (levelClearedByThisHit) {
+      state.bricksRemaining = 0
       advanceLevel(state, dom)
       updateHUD(state, dom, fps)
       return
     }
 
-    maybeSpawnPowerUps(state, destroyedBricks, dom)
+    if (state.bricksRemaining <= CONFIG.POWERUP_DISABLED_LAST_BRICKS) {
+      clearPowerUps(state)
+    } else {
+      maybeSpawnPowerUps(state, destroyedBricks, dom)
+    }
   }
 
   updatePowerUps(state, delta, dom)
@@ -281,80 +302,6 @@ function render() {
 // Start Loop
 startLoop(update, render)
 
-/* =========================================================
-   Highscore helpers (LocalStorage) - TOP 5
-   ========================================================= */
-
-function loadHighScores() {
-  const raw = localStorage.getItem('highscores')
-  if (!raw) return []
-  try {
-    const parsed = JSON.parse(raw)
-    if (!Array.isArray(parsed)) return []
-    return parsed
-  } catch {
-    return []
-  }
-}
-
-function saveHighScores(list) {
-  localStorage.setItem('highscores', JSON.stringify(list))
-}
-
-// Save the score if it enters the TOP 5.
-// highlightIndex = -1 if the new score does NOT enter the TOP 5.
-function savePlayerScore(nickname, score) {
-  let highscores = loadHighScores()
-
-  // we normalise old data (without ts)
-  highscores = highscores.map((e) => ({
-    nickname: e.nickname,
-    score: e.score,
-    ts: e.ts || 0,
-  }))
-
-  // current order (highest → lowest)
-  highscores.sort((a, b) => {
-    if (b.score !== a.score) return b.score - a.score
-    return (a.ts || 0) - (b.ts || 0)
-  })
-
-  const now = Date.now()
-  const newEntry = { nickname, score, ts: now }
-
-  let updated = highscores
-  let highlightIndex = -1
-
-  if (highscores.length < 5) {
-    // Not yet 5 → enter for sure
-    updated = [...highscores, newEntry]
-  } else {
-    const last = highscores[highscores.length - 1]
-    if (score > last.score) {
-      // Enter the TOP 5 → add and then cut to 5
-      updated = [...highscores, newEntry]
-    } else {
-      // NO entry → return list as it is
-      saveHighScores(highscores)
-      return { list: highscores, highlightIndex: -1 }
-    }
-  }
-
-  // Sort and keep only the top 5
-  updated.sort((a, b) => {
-    if (b.score !== a.score) return b.score - a.score
-    return (a.ts || 0) - (b.ts || 0)
-  })
-  updated = updated.slice(0, 5)
-
-  saveHighScores(updated)
-
-  // position of the new record
-  highlightIndex = updated.findIndex((e) => e.score === score && e.nickname === nickname && e.ts === now)
-
-  return { list: updated, highlightIndex }
-}
-
 // Paint table highlighting the row highlightIndex (if not -1)
 function renderHighScores(tableBody, list, highlightIndex = -1) {
   if (!tableBody) return
@@ -363,15 +310,27 @@ function renderHighScores(tableBody, list, highlightIndex = -1) {
 
   list.forEach((row, i) => {
     const tr = document.createElement('tr')
+    const rankCell = document.createElement('td')
+    const nicknameCell = document.createElement('td')
+    const scoreCell = document.createElement('td')
+
     if (i === highlightIndex) {
       tr.classList.add('highscore-highlight')
     }
 
-    tr.innerHTML = `
-        <td>${i + 1}</td>
-        <td>${row.nickname}</td>
-        <td>${row.score}</td>
-      `
+    rankCell.textContent = i + 1
+    nicknameCell.textContent = row.nickname
+    scoreCell.textContent = row.score
+
+    tr.append(rankCell, nicknameCell, scoreCell)
     tableBody.appendChild(tr)
   })
+}
+
+function setHighscoreStatus(message, isError = false) {
+  if (!highscoreStatus) return
+
+  highscoreStatus.textContent = message
+  highscoreStatus.classList.toggle('hidden', !message)
+  highscoreStatus.classList.toggle('error', isError)
 }

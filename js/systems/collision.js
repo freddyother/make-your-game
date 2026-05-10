@@ -98,6 +98,7 @@ export function handleBrickCollisions(state) {
 
   balls.forEach((b) => {
     if (!b) return
+    if (b.stuckToPaddle) return
 
     let hit = null
 

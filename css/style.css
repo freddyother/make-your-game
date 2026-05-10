@@ -52,6 +52,13 @@ body {
   background: #111;
 }
 
+html.is-touch-game #game-area {
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
 /* Paddle */
 #paddle {
   position: absolute;
@@ -113,6 +120,20 @@ body {
   margin-bottom: 10px;
 }
 
+#nickname-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+#nickname-input {
+  width: 10ch;
+  padding: 4px 6px;
+  text-transform: uppercase;
+}
+
 button {
   margin: 5px;
   padding: 8px 16px;
@@ -169,6 +190,16 @@ button:hover {
   margin-top: 20px;
   text-align: center;
   width: 100%;
+}
+
+.highscore-status {
+  margin-top: 10px;
+  color: #bff8ff;
+  font-size: 13px;
+}
+
+.highscore-status.error {
+  color: #ff9b9b;
 }
 
 #highscore-table h3 {
@@ -303,6 +334,13 @@ html.is-mobile-game #gameover-menu button {
 html.is-mobile-game #gameover-menu input {
   margin: 8px 0;
   padding: 8px;
+}
+
+html.is-mobile-game #gameover-menu #nickname-input {
+  display: inline-block;
+  width: 10ch;
+  margin: 8px auto;
+  padding: 6px;
 }
 
 html.is-mobile-game #gameover-menu button {

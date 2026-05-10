@@ -73,14 +73,14 @@ export function resetBallAndPaddle(state) {
   const speed = getBallSpeedForLevel(state.level || 1)
 
   // main ball reattaches to the paddle
-  b.prevX = b.x
-  b.prevY = b.y
   b.stuckToPaddle = true
   b.size = BALL_SIZE
+  b.x = p.x + p.width / 2 - b.size / 2
+  b.y = p.y - b.size - 4
+  b.prevX = b.x
+  b.prevY = b.y
   b.vx = speed
   b.vy = -speed
-
-  // The actual position is adjusted in updateBall when it is stuckToPaddle.
 
   // clear any extra balls
   clearExtraBalls(state)
@@ -133,8 +133,8 @@ export function advanceLevel(state, dom) {
   clearPowerUps(state)
   clearExtraBalls(state)
   state.multiballActive = false
-  createBricks(state, dom)
   resetBallAndPaddle(state)
+  createBricks(state, dom)
 }
 
 /**
@@ -176,6 +176,9 @@ function choosePowerupKind(state) {
 
 // Create power-ups from destroyed bricks
 export function maybeSpawnPowerUps(state, destroyedBricks, dom) {
+  if (state.bricksRemaining <= 0) return
+  if (state.bricksRemaining <= CONFIG.POWERUP_DISABLED_LAST_BRICKS) return
+
   destroyedBricks.forEach((brick) => {
     if (Math.random() < CONFIG.POWERUP_CHANCE) {
       const kind = choosePowerupKind(state)

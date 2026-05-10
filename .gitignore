@@ -1,0 +1,23 @@
+# --- Secretos / credenciales ---
+.env
+.env.*
+!.env.example
+
+# --- Builds / binarios ---
+/bin/
+/server
+node_modules/
+
+# --- Editor / SO ---
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# --- Go ---
+# (go.sum sí se commitea)
+*.test
+coverage.out
+
+# various
+.gitignore
