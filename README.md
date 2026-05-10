@@ -2,7 +2,7 @@
 
 A classic brick–breaker arcade game built in vanilla JavaScript, with modern gameplay extras such as power-ups, power-downs and a persistent local leaderboard.
 
-The project is fully client-side (no database) and can be served with any static file server, such as Python's built-in `http.server`.
+The project is fully client-side (no database). Locally it can be served with Python's built-in `http.server`; on Render it uses a tiny dependency-free Node static server.
 
 ---
 
@@ -64,6 +64,8 @@ make-your-game/
 │   │── config.js           # Global configuration (sizes, speeds, constants)
 │   └── main.js             # Game entry point and orchestration
 ├── index.html              # Main HTML shell
+├── package.json            # Render start script
+├── server.js               # Dependency-free static server for Render
 └── README.md               # Project documentation (this file)
 ```
 
@@ -73,6 +75,7 @@ make-your-game/
 
 - **HTML5 / CSS3 / JavaScript (ES Modules)**
 - **Python `http.server`** (local static server)
+- **Node.js built-in HTTP server** (Render)
 - **LocalStorage** for persistent leaderboard
 
 ---
@@ -142,7 +145,15 @@ Leaderboard data is **per browser and per device**.
 
 ## 🌐 Deploying
 
-Deploy it as a static site. The only files needed by the browser are `index.html`, `css/` and `js/`.
+Render Web Service settings:
+
+```text
+Environment: Node
+Build Command: npm install
+Start Command: npm start
+```
+
+The Node server only serves the static files; it does not use Express or external dependencies.
 
 ---
 
