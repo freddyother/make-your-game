@@ -223,11 +223,13 @@ function update(delta, fps) {
 
     state.bricksRemaining -= destroyedBricks.length
 
-    maybeSpawnPowerUps(state, destroyedBricks, dom)
-
     if (state.bricksRemaining <= 0) {
       advanceLevel(state, dom)
+      updateHUD(state, dom, fps)
+      return
     }
+
+    maybeSpawnPowerUps(state, destroyedBricks, dom)
   }
 
   updatePowerUps(state, delta, dom)

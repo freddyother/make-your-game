@@ -52,12 +52,7 @@ export function createBricks(state, dom) {
 }
 
 export function loseLife(state) {
-  // Remove all active power-ups from the screen
-  state.powerUps.forEach((pu) => {
-    if (pu.dom) pu.dom.remove()
-  })
-
-  state.powerUps = []
+  clearPowerUps(state)
   state.lives -= 1
   if (state.lives <= 0) {
     state.isGameOver = true
@@ -88,8 +83,24 @@ export function resetBallAndPaddle(state) {
   // The actual position is adjusted in updateBall when it is stuckToPaddle.
 
   // clear any extra balls
-  state.extraBalls = []
+  clearExtraBalls(state)
   state.multiballActive = false
+}
+
+export function clearPowerUps(state) {
+  const powerUps = state.powerUps || []
+  powerUps.forEach((pu) => {
+    if (pu.dom) pu.dom.remove()
+  })
+  state.powerUps = []
+}
+
+export function clearExtraBalls(state) {
+  const extraBalls = state.extraBalls || []
+  extraBalls.forEach((ball) => {
+    if (ball.dom) ball.dom.remove()
+  })
+  state.extraBalls = []
 }
 
 export function restartState(state) {
@@ -119,6 +130,9 @@ export function restartState(state) {
 // Level up: reset ball/paddle, recreate bricks and increase speed
 export function advanceLevel(state, dom) {
   state.level += 1
+  clearPowerUps(state)
+  clearExtraBalls(state)
+  state.multiballActive = false
   createBricks(state, dom)
   resetBallAndPaddle(state)
 }
