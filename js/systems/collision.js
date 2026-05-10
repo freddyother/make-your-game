@@ -9,8 +9,6 @@ function getAllBalls(state) {
 }
 
 export function handleWorldCollisions(state) {
-  const worldTop = state.isMobile ? 0 : CONFIG.HUD_HEIGHT
-
   const extras = state.extraBalls || []
   const main = state.ball
   const balls = [main, ...extras]
@@ -32,8 +30,8 @@ export function handleWorldCollisions(state) {
     }
 
     // roof
-    if (b.y <= worldTop) {
-      b.y = worldTop
+    if (b.y <= 0) {
+      b.y = 0
       b.vy = Math.abs(b.vy)
     }
 
