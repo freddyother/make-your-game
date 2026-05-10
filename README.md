@@ -36,7 +36,7 @@ The project uses a small Node server for static files and leaderboard API routes
   - Persistent **top-5 leaderboard**, stored in PostgreSQL.
   - Player can enter a nickname (up to 10 characters).
   - New score is inserted in the correct position and the table is kept sorted.
-  - The table displays the top 5 while the database keeps every submitted score.
+  - The table displays the top 5 while the database keeps a bounded top-score history.
   - The last inserted score row is visually highlighted.
 
 ---
@@ -59,7 +59,8 @@ make-your-game/
 │   │   ├── collision.js    # Ball collisions with walls, paddle and bricks
 │   │   ├── highscores.js   # Leaderboard API client
 │   │   ├── physics.js      # Ball & paddle physics (movement, slow effect)
-│   │   └── rules.js        # Game rules, levels, power-ups & power-downs
+│   │   ├── rules.js        # Game rules, levels, power-ups & power-downs
+│   │   └── sound.js        # Generated Web Audio sound effects
 │   ├── ui/
 │   │   ├── dom.js          # DOM element lookups
 │   │   ├── hud.js          # HUD updates (score, time, level, FPS)
@@ -166,7 +167,7 @@ Each entry includes:
 4. The leaderboard is rendered in the Game Over overlay.
 5. The newly inserted row is **highlighted** if it enters the top 5.
 
-Leaderboard data is shared by every player connected to the same database.
+Leaderboard data is shared by every player connected to the same database. The server keeps the best 500 stored rows to avoid unbounded table growth.
 
 ## 🌐 Deploying
 
@@ -179,6 +180,28 @@ Start Command: npm start
 ```
 
 Set a PostgreSQL `DATABASE_URL` environment variable for production. If your provider requires SSL, also set `PGSSLMODE=require`.
+
+Recommended production environment variables:
+
+```text
+NODE_ENV=production
+DATABASE_URL=postgres://...
+PGSSLMODE=require
+TRUST_PROXY=true
+```
+
+Use `TRUST_PROXY=true` only when the app is behind a trusted reverse proxy or CDN that sets `X-Forwarded-For` / `CF-Connecting-IP`.
+
+## 🔐 Security notes
+
+- Serve the game with `npm start`, not `python3 -m http.server`, because the leaderboard API and PostgreSQL live in `server.js`.
+- The Node server only serves `index.html`, `css/`, `js/` and `assets/`; internal files such as `.env`, `server.js`, `package.json`, `db/` and Docker files are blocked.
+- Score submissions are JSON-only, rate-limited per client IP and validated server-side.
+- Nicknames are normalised to uppercase letters, numbers, spaces, `_` and `-`, max 10 characters.
+- Scores must be between `0` and `999999999`.
+- The leaderboard is suitable for a casual public game. A fully competitive anti-cheat would require server-authoritative gameplay or score verification beyond this client-side game.
+- Keep secrets in environment variables. Do not deploy a real `.env` file into the public web root.
+- Terminate HTTPS at your platform, reverse proxy or CDN before traffic reaches the Node app.
 
 ---
 

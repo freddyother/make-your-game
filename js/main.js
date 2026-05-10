@@ -85,14 +85,16 @@ dom.btnRestartGameOver.addEventListener('click', () => {
   restartGame()
 })
 
-// we read the score displayed in the overlay
 if (btnSaveScore) {
   btnSaveScore.addEventListener('click', async () => {
-    const nickname = (nicknameInput?.value.trim().substring(0, 10) || 'Player').toUpperCase()
+    if (!state.isGameOver) {
+      setHighscoreStatus('Score can only be saved after game over.', true)
+      return
+    }
 
-    // we read the score displayed in the overlay
-    const score = Number.parseInt(document.getElementById('gameover-score').textContent, 10)
-    if (Number.isNaN(score)) {
+    const nickname = (nicknameInput?.value.trim().substring(0, 10) || 'Player').toUpperCase()
+    const score = Math.floor(state.score)
+    if (!Number.isFinite(score) || score < 0) {
       setHighscoreStatus('Could not read the final score.', true)
       return
     }

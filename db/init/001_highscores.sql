@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS highscores (
   id BIGSERIAL PRIMARY KEY,
   nickname VARCHAR(10) NOT NULL,
-  score INTEGER NOT NULL CHECK (score >= 0),
+  score INTEGER NOT NULL CHECK (score >= 0 AND score <= 999999999),
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
