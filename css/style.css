@@ -151,6 +151,12 @@ html.is-touch-game #game-area {
   text-transform: uppercase;
 }
 
+#nickname-input::placeholder {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: none;
+}
+
 button {
   margin: 5px;
   min-height: 34px;
