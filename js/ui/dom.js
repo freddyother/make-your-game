@@ -16,6 +16,7 @@ export function getDomRefs() {
   const pauseOverlay = document.getElementById('pause-overlay')
   const btnContinue = document.getElementById('btn-continue')
   const btnRestart = document.getElementById('btn-restart')
+  const btnMobileAction = document.getElementById('btn-mobile-action')
 
   const gameoverOverlay = document.getElementById('gameover-overlay')
   const gameoverScoreEl = document.getElementById('gameover-score')
@@ -33,6 +34,7 @@ export function getDomRefs() {
     pauseOverlay,
     btnContinue,
     btnRestart,
+    btnMobileAction,
     gameoverOverlay,
     gameoverScoreEl,
     btnRestartGameOver,

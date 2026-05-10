@@ -6,6 +6,7 @@ import { CONFIG } from '../config.js'
 
 export function createInitialState() {
   const { GAME_WIDTH, GAME_HEIGHT, HUD_HEIGHT, PADDLE_WIDTH, PADDLE_HEIGHT, BALL_SIZE, BALL_SPEED, INITIAL_LIVES } = CONFIG
+  const paddleY = CONFIG.IS_MOBILE ? GAME_HEIGHT - PADDLE_HEIGHT - CONFIG.PADDLE_BOTTOM_OFFSET : GAME_HEIGHT - HUD_HEIGHT - 40
 
   // main ball
   const mainBall = {
@@ -27,8 +28,10 @@ export function createInitialState() {
     // score multiplier (for x2 power-up)
     scoreMultiplier: 1,
 
+    isMobile: CONFIG.IS_MOBILE,
     gameWidth: GAME_WIDTH,
     gameHeight: GAME_HEIGHT,
+    hudHeight: HUD_HEIGHT,
 
     lives: INITIAL_LIVES,
 
@@ -37,7 +40,7 @@ export function createInitialState() {
 
     paddle: {
       x: (GAME_WIDTH - PADDLE_WIDTH) / 2,
-      y: GAME_HEIGHT - HUD_HEIGHT - 40,
+      y: paddleY,
       width: PADDLE_WIDTH,
       height: PADDLE_HEIGHT,
     },

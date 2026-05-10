@@ -2,7 +2,7 @@
 
 A classic brick–breaker arcade game built in vanilla JavaScript, with modern gameplay extras such as power-ups, power-downs and a persistent local leaderboard.
 
-The project is fully client-side (no database) and is served by a small Node/Express server, making it easy to deploy on Render, Netlify, or any Node-compatible platform.
+The project is fully client-side (no database) and can be served with any static file server, such as Python's built-in `http.server`.
 
 ---
 
@@ -64,8 +64,6 @@ make-your-game/
 │   │── config.js           # Global configuration (sizes, speeds, constants)
 │   └── main.js             # Game entry point and orchestration
 ├── index.html              # Main HTML shell
-├── server.js               # Small Express server to serve the static game
-├── package.json            # Node/Express configuration and scripts
 └── README.md               # Project documentation (this file)
 ```
 
@@ -74,22 +72,24 @@ make-your-game/
 ## 🔧 Technologies
 
 - **HTML5 / CSS3 / JavaScript (ES Modules)**
-- **Node.js + Express or Phyton** (static server)
+- **Python `http.server`** (local static server)
 - **LocalStorage** for persistent leaderboard
 
 ---
 
-## 🚀 Getting started (local)
+## 🚀 Getting Started
 
-- **Phyton** Run on Phyton
+Run a local static server from the project root:
 
 ```bash
-$ Phyton -m http.server 5500
-
-http://localhost:5500
+python3 -m http.server 8080
 ```
 
-(or the port printed in your terminal).
+Then open:
+
+```text
+http://localhost:8080
+```
 
 ## 🎯 How to play
 
@@ -140,25 +140,9 @@ Each entry includes:
 
 Leaderboard data is **per browser and per device**.
 
-## 🌐 Deploying to Render
+## 🌐 Deploying
 
-1. Push this repository to **GitHub**.
-2. In **Render**:
-   - Create a new **Web Service**.
-   - Connect your GitHub repo.
-   - Set:
-     - **Environment:** Node
-     - **Build Command:** `npm install`
-     - **Start Command:** `npm start`
-3. Deploy.
-
-Render will run `server.js`, which serves:
-
-- `index.html`
-- `/css`
-- `/js`
-
-as static assets.
+Deploy it as a static site. The only files needed by the browser are `index.html`, `css/` and `js/`.
 
 ---
 

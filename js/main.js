@@ -15,8 +15,10 @@ import { showPauseOverlay, showGameOver } from './ui/overlays.js'
 import { updatePaddle, updateBall } from './systems/physics.js'
 import { createBricks, loseLife, restartState, resetBallAndPaddle, advanceLevel, maybeSpawnPowerUps, updatePowerUps } from './systems/rules.js'
 import { handleWorldCollisions, handlePaddleCollision, handleBrickCollisions } from './systems/collision.js'
+import { CONFIG, configureForViewport } from './config.js'
 
 // === MOBILE: lock page scrolling (iPhone/Android) ===
+configureForViewport()
 lockPageScrollOnTouchDevices()
 
 function lockPageScrollOnTouchDevices() {
@@ -29,10 +31,10 @@ function lockPageScrollOnTouchDevices() {
   const body = document.body
 
   html.style.overflow = 'hidden'
-  html.style.height = '100%'
+  html.style.height = CONFIG.IS_MOBILE ? '100dvh' : '100%'
 
   body.style.overflow = 'hidden'
-  body.style.height = '100%'
+  body.style.height = CONFIG.IS_MOBILE ? '100dvh' : '100%'
   body.style.position = 'fixed' // iOS Safari: evita que el body se “arrastre”
   body.style.inset = '0'
   body.style.width = '100%'
@@ -69,11 +71,28 @@ const nicknameBox = document.getElementById('nickname-box')
 dom.btnContinue.addEventListener('click', () => {
   state.isPaused = false
   showPauseOverlay(dom, false)
+  updateMobileActionButton()
 })
 
 dom.btnRestart.addEventListener('click', () => {
   restartGame()
 })
+
+if (dom.btnMobileAction) {
+  dom.btnMobileAction.addEventListener('click', () => {
+    if (state.isGameOver) return
+
+    if (state.ball.stuckToPaddle) {
+      state.ball.stuckToPaddle = false
+      updateMobileActionButton()
+      return
+    }
+
+    state.isPaused = !state.isPaused
+    showPauseOverlay(dom, state.isPaused)
+    updateMobileActionButton()
+  })
+}
 
 dom.btnRestartGameOver.addEventListener('click', () => {
   restartGame()
@@ -145,6 +164,7 @@ function restartGame() {
   resetBallAndPaddle(state)
   showPauseOverlay(dom, false)
   showGameOver(dom, false)
+  updateMobileActionButton()
 }
 
 // GLOBAL UPDATE
@@ -177,10 +197,11 @@ function update(delta, fps) {
   }
 
   const input = getSnapshot()
+  const launchPressed = input.pausePressed || input.launchPressed
 
   // pause control with Space (edge detect)
   // Throw the ball if it is stuck to the paddle.
-  if (state.ball.stuckToPaddle && input.pausePressed && !inputState.lastPausePressed) {
+  if (state.ball.stuckToPaddle && launchPressed && !inputState.lastLaunchPressed) {
     state.ball.stuckToPaddle = false // Throw the ball
 
     // If the ball is already in play, use space to pause.
@@ -189,6 +210,7 @@ function update(delta, fps) {
     showPauseOverlay(dom, state.isPaused)
   }
   inputState.lastPausePressed = input.pausePressed
+  inputState.lastLaunchPressed = launchPressed
 
   if (state.isPaused) return
 
@@ -230,10 +252,13 @@ function update(delta, fps) {
 
 // GLOBAL RENDER
 function render() {
+  updateMobileActionButton()
+
   const p = state.paddle
   dom.paddleEl.style.left = p.x + 'px'
   dom.paddleEl.style.top = p.y + 'px'
   dom.paddleEl.style.width = p.width + 'px'
+  dom.paddleEl.style.height = p.height + 'px'
 
   const balls = [state.ball, ...(state.extraBalls || [])].filter(Boolean)
 
@@ -242,6 +267,8 @@ function render() {
     const b0 = balls[0]
     dom.ballEl.style.left = b0.x + 'px'
     dom.ballEl.style.top = b0.y + 'px'
+    dom.ballEl.style.width = b0.size + 'px'
+    dom.ballEl.style.height = b0.size + 'px'
     b0.dom = dom.ballEl
   }
 
@@ -258,9 +285,30 @@ function render() {
 
     el.style.left = b.x + 'px'
     el.style.top = b.y + 'px'
+    el.style.width = b.size + 'px'
+    el.style.height = b.size + 'px'
 
     dom.gameArea.appendChild(el)
     b.dom = el
+  }
+}
+
+function updateMobileActionButton() {
+  if (!dom.btnMobileAction) return
+
+  if (!state.isMobile) {
+    dom.btnMobileAction.hidden = true
+    return
+  }
+
+  dom.btnMobileAction.hidden = false
+
+  if (state.isPaused) {
+    dom.btnMobileAction.textContent = 'Resume'
+  } else if (state.ball.stuckToPaddle || state.isGameOver) {
+    dom.btnMobileAction.textContent = 'Start'
+  } else {
+    dom.btnMobileAction.textContent = 'Pause'
   }
 }
 

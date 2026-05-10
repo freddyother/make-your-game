@@ -9,7 +9,7 @@ function getAllBalls(state) {
 }
 
 export function handleWorldCollisions(state) {
-  const { GAME_WIDTH, GAME_HEIGHT, HUD_HEIGHT } = CONFIG
+  const worldTop = state.isMobile ? 0 : CONFIG.HUD_HEIGHT
 
   const extras = state.extraBalls || []
   const main = state.ball
@@ -26,19 +26,19 @@ export function handleWorldCollisions(state) {
       b.x = 0
       b.vx *= -1
     }
-    if (b.x + b.size >= GAME_WIDTH) {
-      b.x = GAME_WIDTH - b.size
+    if (b.x + b.size >= state.gameWidth) {
+      b.x = state.gameWidth - b.size
       b.vx *= -1
     }
 
     // roof
-    if (b.y <= HUD_HEIGHT) {
-      b.y = HUD_HEIGHT
+    if (b.y <= worldTop) {
+      b.y = worldTop
       b.vy *= -1
     }
 
     // below → that ball is lost
-    if (b.y + b.size >= GAME_HEIGHT) {
+    if (b.y + b.size >= state.gameHeight) {
       if (i === 0) {
         // the main ball has fallen
         if (extras.length > 0) {

@@ -40,6 +40,8 @@ export function createBricks(state, dom) {
       el.classList.add('brick')
       el.style.left = x + 'px'
       el.style.top = y + 'px'
+      el.style.width = BRICK_WIDTH + 'px'
+      el.style.height = BRICK_HEIGHT + 'px'
       brick.dom = el
 
       dom.gameArea.appendChild(el)
@@ -65,12 +67,13 @@ export function loseLife(state) {
 }
 
 export function resetBallAndPaddle(state) {
-  const { GAME_WIDTH, GAME_HEIGHT, HUD_HEIGHT, BALL_SIZE } = CONFIG
+  const { GAME_HEIGHT, HUD_HEIGHT, BALL_SIZE, PADDLE_HEIGHT } = CONFIG
   const p = state.paddle
   const b = state.ball
 
-  p.x = (GAME_WIDTH - p.width) / 2
-  p.y = GAME_HEIGHT - HUD_HEIGHT - 40
+  p.height = PADDLE_HEIGHT
+  p.x = (state.gameWidth - p.width) / 2
+  p.y = state.isMobile ? state.gameHeight - p.height - CONFIG.PADDLE_BOTTOM_OFFSET : GAME_HEIGHT - HUD_HEIGHT - 40
 
   const speed = getBallSpeedForLevel(state.level || 1)
 
@@ -175,6 +178,8 @@ export function maybeSpawnPowerUps(state, destroyedBricks, dom) {
       el.classList.add('powerup', `powerup-${kind}`)
       el.style.left = pu.x + 'px'
       el.style.top = pu.y + 'px'
+      el.style.width = pu.size + 'px'
+      el.style.height = pu.size + 'px'
 
       dom.gameArea.appendChild(el)
       pu.dom = el
@@ -186,7 +191,6 @@ export function maybeSpawnPowerUps(state, destroyedBricks, dom) {
 
 // Move power-ups, detect collection and clear those that leave the screen.
 export function updatePowerUps(state, delta, dom) {
-  const { GAME_HEIGHT } = CONFIG
   const p = state.paddle
 
   state.powerUps = state.powerUps.filter((pu) => {
@@ -203,7 +207,7 @@ export function updatePowerUps(state, delta, dom) {
     }
 
     // falls out of screen
-    if (pu.y > GAME_HEIGHT) {
+    if (pu.y > state.gameHeight) {
       if (pu.dom) pu.dom.remove()
       return false
     }

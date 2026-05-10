@@ -7,17 +7,21 @@ import { CONFIG } from '../config.js'
 export function updatePaddle(state, input, delta) {
   const p = state.paddle
 
-  // horizontal movement according to keyboard
-  if (input.left) {
-    p.x -= CONFIG.PADDLE_SPEED * delta
-  }
-  if (input.right) {
-    p.x += CONFIG.PADDLE_SPEED * delta
+  if (state.isMobile && input.pointerActive && Number.isFinite(input.pointerX)) {
+    p.x = input.pointerX - p.width / 2
+  } else {
+    // horizontal movement according to keyboard
+    if (input.left) {
+      p.x -= CONFIG.PADDLE_SPEED * delta
+    }
+    if (input.right) {
+      p.x += CONFIG.PADDLE_SPEED * delta
+    }
   }
 
   // keep the paddle within the limits
   if (p.x < 0) p.x = 0
-  const maxX = CONFIG.GAME_WIDTH - p.width
+  const maxX = state.gameWidth - p.width
   if (p.x > maxX) p.x = maxX
 
   // any ball is stuck to the paddle
