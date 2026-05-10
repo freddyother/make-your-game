@@ -71,28 +71,11 @@ const nicknameBox = document.getElementById('nickname-box')
 dom.btnContinue.addEventListener('click', () => {
   state.isPaused = false
   showPauseOverlay(dom, false)
-  updateMobileActionButton()
 })
 
 dom.btnRestart.addEventListener('click', () => {
   restartGame()
 })
-
-if (dom.btnMobileAction) {
-  dom.btnMobileAction.addEventListener('click', () => {
-    if (state.isGameOver) return
-
-    if (state.ball.stuckToPaddle) {
-      state.ball.stuckToPaddle = false
-      updateMobileActionButton()
-      return
-    }
-
-    state.isPaused = !state.isPaused
-    showPauseOverlay(dom, state.isPaused)
-    updateMobileActionButton()
-  })
-}
 
 dom.btnRestartGameOver.addEventListener('click', () => {
   restartGame()
@@ -164,7 +147,6 @@ function restartGame() {
   resetBallAndPaddle(state)
   showPauseOverlay(dom, false)
   showGameOver(dom, false)
-  updateMobileActionButton()
 }
 
 // GLOBAL UPDATE
@@ -198,14 +180,17 @@ function update(delta, fps) {
 
   const input = getSnapshot()
   const launchPressed = input.pausePressed || input.launchPressed
+  const launchEdge = launchPressed && !inputState.lastLaunchPressed
+  const pauseEdge = input.pausePressed && !inputState.lastPausePressed
+  const mobileDoubleTapEdge = state.isMobile && input.launchPressed && !inputState.lastLaunchPressed
 
   // pause control with Space (edge detect)
   // Throw the ball if it is stuck to the paddle.
-  if (state.ball.stuckToPaddle && launchPressed && !inputState.lastLaunchPressed) {
+  if (state.ball.stuckToPaddle && launchEdge) {
     state.ball.stuckToPaddle = false // Throw the ball
 
     // If the ball is already in play, use space to pause.
-  } else if (input.pausePressed && !inputState.lastPausePressed) {
+  } else if (pauseEdge || (mobileDoubleTapEdge && !state.isPaused)) {
     state.isPaused = !state.isPaused
     showPauseOverlay(dom, state.isPaused)
   }
@@ -252,8 +237,6 @@ function update(delta, fps) {
 
 // GLOBAL RENDER
 function render() {
-  updateMobileActionButton()
-
   const p = state.paddle
   dom.paddleEl.style.left = p.x + 'px'
   dom.paddleEl.style.top = p.y + 'px'
@@ -290,25 +273,6 @@ function render() {
 
     dom.gameArea.appendChild(el)
     b.dom = el
-  }
-}
-
-function updateMobileActionButton() {
-  if (!dom.btnMobileAction) return
-
-  if (!state.isMobile) {
-    dom.btnMobileAction.hidden = true
-    return
-  }
-
-  dom.btnMobileAction.hidden = false
-
-  if (state.isPaused) {
-    dom.btnMobileAction.textContent = 'Resume'
-  } else if (state.ball.stuckToPaddle || state.isGameOver) {
-    dom.btnMobileAction.textContent = 'Start'
-  } else {
-    dom.btnMobileAction.textContent = 'Pause'
   }
 }
 

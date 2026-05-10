@@ -70,7 +70,7 @@ export function configureForViewport() {
     PADDLE_WIDTH: Math.round(clamp(gameWidth * 0.24, 84, 120)),
     PADDLE_HEIGHT: Math.round(clamp(gameWidth * 0.034, 12, 16)),
     PADDLE_SPEED: Math.round(clamp(gameWidth * 1.45, 420, 620)),
-    PADDLE_BOTTOM_OFFSET: Math.round(clamp(gameHeight * 0.035, 18, 28)),
+    PADDLE_BOTTOM_OFFSET: Math.round(clamp(gameHeight * 0.08, 52, 70)),
 
     BALL_SIZE: Math.round(clamp(gameWidth * 0.03, 11, 14)),
     BALL_SPEED: Math.round(clamp(gameHeight * 0.42, 240, 340)),

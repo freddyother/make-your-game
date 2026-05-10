@@ -30,6 +30,9 @@ export function createInput() {
 
   if (CONFIG.IS_MOBILE) {
     const gameArea = document.getElementById('game-area')
+    let lastTapTime = 0
+    let lastTapX = 0
+    let lastTapY = 0
 
     const updatePointer = (e) => {
       if (!gameArea) return
@@ -39,10 +42,29 @@ export function createInput() {
       inputState.pointerX = (e.clientX - rect.left) * ratio
     }
 
+    const queueDoubleTapAction = () => {
+      inputState.launchPressed = true
+      window.setTimeout(() => {
+        inputState.launchPressed = false
+      }, 120)
+    }
+
     gameArea?.addEventListener('pointerdown', (e) => {
       e.preventDefault()
       inputState.pointerActive = true
       updatePointer(e)
+
+      const now = performance.now()
+      const tapDistance = Math.hypot(e.clientX - lastTapX, e.clientY - lastTapY)
+      if (now - lastTapTime < 320 && tapDistance < 44) {
+        lastTapTime = 0
+        queueDoubleTapAction()
+      } else {
+        lastTapTime = now
+        lastTapX = e.clientX
+        lastTapY = e.clientY
+      }
+
       gameArea.setPointerCapture?.(e.pointerId)
     })
 
@@ -62,6 +84,14 @@ export function createInput() {
     gameArea?.addEventListener('lostpointercapture', () => {
       inputState.pointerActive = false
     })
+
+    gameArea?.addEventListener(
+      'touchend',
+      (e) => {
+        if (e.cancelable) e.preventDefault()
+      },
+      { passive: false },
+    )
   }
 
   // snapshot to use in the update (to detect pause flanks)

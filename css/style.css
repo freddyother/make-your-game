@@ -126,10 +126,6 @@ button:hover {
   filter: brightness(1.1);
 }
 
-#btn-mobile-action {
-  display: none;
-}
-
 .powerup {
   position: absolute;
   width: 18px;
@@ -280,28 +276,13 @@ html.is-mobile-game .hud-item {
   white-space: nowrap;
 }
 
-html.is-mobile-game #btn-mobile-action {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  position: fixed;
-  left: 50%;
-  bottom: max(12px, env(safe-area-inset-bottom));
-  transform: translateX(-50%);
-  z-index: 18;
-  min-width: 72px;
-  height: 36px;
-  margin: 0;
-  padding: 0 12px;
-  font-size: 13px;
-  font-weight: 600;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
-}
-
 html.is-mobile-game #game-area {
   top: var(--hud-height);
   height: calc(100% - var(--hud-height));
   touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 html.is-mobile-game #pause-menu,
