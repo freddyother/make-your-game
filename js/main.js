@@ -16,10 +16,12 @@ import { updatePaddle, updateBall } from './systems/physics.js'
 import { createBricks, loseLife, restartState, resetBallAndPaddle, advanceLevel, clearPowerUps, maybeSpawnPowerUps, updatePowerUps } from './systems/rules.js'
 import { handleWorldCollisions, handlePaddleCollision, handleBrickCollisions } from './systems/collision.js'
 import { addHighscore } from './systems/highscores.js'
+import { installAudioUnlock, playBrickBreak, playGameOver, playLaunch, playLevelUp, playLoseLife, playPaddleHit, playPowerUp, playWallHit } from './systems/sound.js'
 import { CONFIG, configureForViewport } from './config.js'
 
 // === MOBILE: lock page scrolling (iPhone/Android) ===
 configureForViewport()
+installAudioUnlock()
 lockPageScrollOnTouchDevices()
 
 function lockPageScrollOnTouchDevices() {
@@ -201,6 +203,7 @@ function update(delta, fps) {
   // Throw the ball if it is stuck to the paddle.
   if (state.ball.stuckToPaddle && launchEdge) {
     state.ball.stuckToPaddle = false // Throw the ball
+    playLaunch()
 
     // If the ball is already in play, use space to pause.
   } else if (pauseEdge || (touchDoubleTapEdge && !state.isPaused)) {
@@ -219,14 +222,28 @@ function update(delta, fps) {
   updateBall(state, delta)
 
   const worldEvent = handleWorldCollisions(state)
-  if (worldEvent === 'fell-out') {
-    loseLife(state)
+  const worldHits = (worldEvent?.wallHits || 0) + (worldEvent?.roofHits || 0)
+  if (worldHits > 0) {
+    playWallHit(worldHits)
   }
 
-  handlePaddleCollision(state)
+  if (worldEvent?.fellOut) {
+    loseLife(state)
+    if (state.isGameOver) {
+      playGameOver()
+    } else {
+      playLoseLife()
+    }
+  }
+
+  const paddleHits = handlePaddleCollision(state)
+  if (paddleHits > 0) {
+    playPaddleHit()
+  }
 
   const destroyedBricks = handleBrickCollisions(state)
   if (destroyedBricks.length > 0) {
+    playBrickBreak(destroyedBricks.length)
     const bricksRemainingBeforeHit = state.bricksRemaining
     const levelClearedByThisHit = destroyedBricks.length >= bricksRemainingBeforeHit
 
@@ -242,6 +259,7 @@ function update(delta, fps) {
     if (levelClearedByThisHit) {
       state.bricksRemaining = 0
       advanceLevel(state, dom)
+      playLevelUp()
       updateHUD(state, dom, fps)
       return
     }
@@ -253,7 +271,10 @@ function update(delta, fps) {
     }
   }
 
-  updatePowerUps(state, delta, dom)
+  const collectedPowerUps = updatePowerUps(state, delta, dom)
+  collectedPowerUps.forEach((kind) => {
+    playPowerUp(kind)
+  })
 
   updateHUD(state, dom, fps)
 }

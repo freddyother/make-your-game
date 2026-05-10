@@ -211,6 +211,7 @@ export function maybeSpawnPowerUps(state, destroyedBricks, dom) {
 // Move power-ups, detect collection and clear those that leave the screen.
 export function updatePowerUps(state, delta, dom) {
   const p = state.paddle
+  const collectedKinds = []
 
   state.powerUps = state.powerUps.filter((pu) => {
     pu.y += pu.vy * delta
@@ -221,6 +222,7 @@ export function updatePowerUps(state, delta, dom) {
     // collected by the paddle
     if (rectIntersect(pu.x, pu.y, pu.size, pu.size, p.x, p.y, p.width, p.height)) {
       applyPowerUp(state, pu)
+      collectedKinds.push(pu.kind)
       if (pu.dom) pu.dom.remove()
       return false
     }
@@ -233,6 +235,8 @@ export function updatePowerUps(state, delta, dom) {
 
     return true
   })
+
+  return collectedKinds
 }
 
 // Create N extra balls from the main ball

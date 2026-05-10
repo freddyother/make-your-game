@@ -9,58 +9,68 @@ function getAllBalls(state) {
 }
 
 export function handleWorldCollisions(state) {
-  const extras = state.extraBalls || []
-  const main = state.ball
-  const balls = [main, ...extras]
+  const balls = getAllBalls(state)
+  const survivors = []
+  const event = {
+    fellOut: false,
+    lostBalls: 0,
+    wallHits: 0,
+    roofHits: 0,
+  }
 
-  // go backwards because we can eliminate balls
-  for (let i = balls.length - 1; i >= 0; i--) {
-    const b = balls[i]
+  for (const b of balls) {
     if (!b) continue
-    if (b.stuckToPaddle) continue
+    if (b.stuckToPaddle) {
+      survivors.push(b)
+      continue
+    }
 
     // side walls
     if (b.x <= 0) {
       b.x = 0
       b.vx = Math.abs(b.vx)
+      event.wallHits += 1
     }
     if (b.x + b.size >= state.gameWidth) {
       b.x = state.gameWidth - b.size
       b.vx = -Math.abs(b.vx)
+      event.wallHits += 1
     }
 
     // roof
     if (b.y <= 0) {
       b.y = 0
       b.vy = Math.abs(b.vy)
+      event.roofHits += 1
     }
 
     // below → that ball is lost
     if (b.y + b.size >= state.gameHeight) {
-      if (i === 0) {
-        // the main ball has fallen
-        if (extras.length > 0) {
-          const promoted = extras.shift()
-          state.ball = promoted
-        } else {
-          // no balls left
-          state.extraBalls = []
-          return 'fell-out'
-        }
-      } else {
-        // an extra ball has fallen
-        extras.splice(i - 1, 1) // offset of 1 because the main one is at index 0
-      }
+      event.lostBalls += 1
+      if (b.dom && b.dom.classList?.contains('ball-extra')) b.dom.remove()
+      continue
     }
+
+    survivors.push(b)
   }
 
-  state.extraBalls = extras
-  return null
+  if (survivors.length === 0) {
+    state.extraBalls = []
+    state.multiballActive = false
+    event.fellOut = true
+    return event
+  }
+
+  state.ball = survivors[0]
+  state.extraBalls = survivors.slice(1)
+  state.multiballActive = state.extraBalls.length > 0
+  return event
 }
 
 export function handlePaddleCollision(state) {
   const p = state.paddle
   const balls = getAllBalls(state)
+  let hitCount = 0
 
   balls.forEach((b) => {
     if (!b) return
@@ -75,6 +85,7 @@ export function handlePaddleCollision(state) {
       if (cameFromAbove || b.vy > 0) {
         b.y = p.y - b.size
         b.vy = -Math.abs(b.vy)
+        hitCount += 1
 
         // modify vx according to the point of impact
         const hitPos = b.x + b.size / 2 - p.x
@@ -83,12 +94,16 @@ export function handlePaddleCollision(state) {
       } else if (cameFromLeft) {
         b.x = p.x - b.size - 0.1
         b.vx = -Math.abs(b.vx)
+        hitCount += 1
       } else if (cameFromRight) {
         b.x = p.x + p.width + 0.1
         b.vx = Math.abs(b.vx)
+        hitCount += 1
       }
     }
   })
+
+  return hitCount
 }
 
 // Returns an array with the destroyed bricks (for score and power-ups)
