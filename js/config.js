@@ -34,6 +34,7 @@ export const CONFIG = {
   POWERUP_DISABLED_LAST_BRICKS: 3,
 
   PADDLE_BOTTOM_OFFSET: 40,
+  MOBILE_PADDLE_RAISE: 15,
 }
 
 export function configureForViewport() {
@@ -78,7 +79,7 @@ export function configureForViewport() {
     PADDLE_WIDTH: Math.round(clamp(gameWidth * 0.24, 84, 120)),
     PADDLE_HEIGHT: Math.round(clamp(gameWidth * 0.034, 12, 16)),
     PADDLE_SPEED: Math.round(clamp(gameWidth * 1.45, 420, 620)),
-    PADDLE_BOTTOM_OFFSET: Math.round(clamp(gameHeight * 0.035, 18, 28)),
+    PADDLE_BOTTOM_OFFSET: Math.round(clamp(gameHeight * 0.035, 18, 28)) + CONFIG.MOBILE_PADDLE_RAISE,
 
     BALL_SIZE: Math.round(clamp(gameWidth * 0.03, 11, 14)),
     BALL_SPEED: Math.round(clamp(gameHeight * 0.42, 240, 340)),
